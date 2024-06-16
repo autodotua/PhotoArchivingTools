@@ -28,39 +28,22 @@ public partial class DeleteJpgIfExistRawViewModel : ViewModelBase
             Dir = WeakReferenceMessenger.Default.Send(new GetDirMessage()).Dir,
             RawExtension = RawExtension
         };
-        try
-        {
-            await deleteJpgIfExistRaw.InitializeAsync();
-            DeletingJpgFiles = deleteJpgIfExistRaw.DeletingJpgFiles;
-        }
-        catch (Exception ex)
-        {
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Error,
-                Title = "初始化失败",
-                Exception = ex
-            });
-        }
+        await TryRunAsync(async () =>
+       {
+           await deleteJpgIfExistRaw.InitializeAsync();
+           DeletingJpgFiles = deleteJpgIfExistRaw.DeletingJpgFiles;
+       }, "初始化失败");
     }
 
     [RelayCommand]
-    private async Task ExecuteAsync()
+    private Task ExecuteAsync()
     {
-        try
+        return TryRunAsync(async () =>
         {
             await deleteJpgIfExistRaw.ExecuteAsync();
             deleteJpgIfExistRaw = null;
             DeletingJpgFiles = null;
-        }
-        catch (Exception ex)
-        {
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Error,
-                Title = "执行失败",
-                Exception = ex
-            });
-        }
+        }, "执行失败");
+
     }
 }

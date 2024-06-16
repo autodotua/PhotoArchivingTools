@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace PhotoArchivingTools.ViewModels;
 public partial class SameTimePhotosMergeModel : ViewModelBase
 {
-    private SameTimePhotosMergePanelUtility sameTimePhotosMerge;
+    private SameTimePhotosMergeUtility sameTimePhotosMerge;
 
     [ObservableProperty]
     private int minTimeIntervalMinutes = 10;
@@ -22,44 +22,26 @@ public partial class SameTimePhotosMergeModel : ViewModelBase
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        sameTimePhotosMerge = new SameTimePhotosMergePanelUtility()
+        sameTimePhotosMerge = new SameTimePhotosMergeUtility()
         {
             Dir = WeakReferenceMessenger.Default.Send(new GetDirMessage()).Dir,
             MinTimeInterval = TimeSpan.FromMinutes(MinTimeIntervalMinutes),
         };
-        try
+        await TryRunAsync(async () =>
         {
             await sameTimePhotosMerge.InitializeAsync();
             SameTimePhotosDirs = sameTimePhotosMerge.TargetDirs;
-        }
-        catch (Exception ex)
-        {
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Error,
-                Title = "初始化失败",
-                Exception = ex
-            });
-        }
+        }, "初始化失败");
     }
 
     [RelayCommand]
     private async Task ExecuteAsync()
     {
         ArgumentNullException.ThrowIfNull(sameTimePhotosMerge);
-        try
-        {
-            await sameTimePhotosMerge.ExecuteAsync();
-            SameTimePhotosDirs = null;
-        }
-        catch (Exception ex)
-        {
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Error,
-                Title = "执行失败",
-                Exception = ex
-            });
-        }
+        await TryRunAsync(async () =>
+          {
+              await sameTimePhotosMerge.ExecuteAsync();
+              SameTimePhotosDirs = null;
+          }, "执行失败");
     }
 }

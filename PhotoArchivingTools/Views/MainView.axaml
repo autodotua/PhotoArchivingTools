@@ -32,26 +32,32 @@
                 VerticalAlignment="Center"
                 Content="浏览.." />
         </Grid>
-        <Grid
+        <ScrollViewer
             Grid.Row="2"
-            ColumnDefinitions="*,8,*">
-
-            <gb:GroupBox
-                Header="相同时间段照片归档"
-                Theme="{StaticResource GroupBoxClassic}">
-                <local:SameTimePhotosMergePanel />
-            </gb:GroupBox>
-            <gb:GroupBox Grid.Column="2"
-                Header="删除存在RAW的JPG"
-                Theme="{StaticResource GroupBoxClassic}">
-              <local:DeleteJpgIfExistRawPanel/>
-            </gb:GroupBox>
-        </Grid>
-        <!--<TabControl Grid.Row="2">
-            <TabItem Header="相同时间段照片归档">
-                <local:SameTimePhotosMergePanel />
-            </TabItem>
-            <TabItem Header="删除存在RAW的JPG" />
-        </TabControl>-->
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel
+                Orientation="Vertical"
+                Spacing="8">
+                <StackPanel.Styles>
+                    <Style Selector="Expander">
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    </Style>
+                </StackPanel.Styles>
+                <Expander Header="相同时间段照片归档">
+                    <local:SameTimePhotosMergePanel />
+                </Expander>
+                <Expander
+                    Grid.Column="2"
+                    Header="删除存在RAW的JPG">
+                    <local:DeleteJpgIfExistRawPanel />
+                </Expander>  
+                <Expander
+                    Grid.Column="2"
+                    Header="使用Exif时间更新文件修改时间">
+                    <local:RepairModifiedTimePanel />
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </UserControl>

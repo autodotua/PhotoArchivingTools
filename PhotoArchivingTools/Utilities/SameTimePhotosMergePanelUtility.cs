@@ -6,10 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
 namespace PhotoArchivingTools.Utilities
 {
-    public class SameTimePhotosMergePanelUtility : UtilityBase
+    public class SameTimePhotosMergeUtility : UtilityBase
     {
         public TimeSpan MinTimeInterval { get; set; }
 
