@@ -1,0 +1,57 @@
+<UserControl
+    x:Class="PhotoArchivingTools.Views.MainView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:gb="using:GroupBox.Avalonia.Controls"
+    xmlns:local="clr-namespace:PhotoArchivingTools.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:MainViewModel"
+    IsEnabled="{Binding IsEnable}"
+    mc:Ignorable="d">
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Grid
+        Margin="4"
+        RowDefinitions="Auto,8,*">
+        <Grid ColumnDefinitions="Auto,8,*,8,Auto,8,Auto,8,Auto">
+            <TextBlock
+                VerticalAlignment="Center"
+                Text="操作目录：" />
+            <TextBox
+                Grid.Column="2"
+                VerticalAlignment="Center"
+                Text="{Binding Dir}" />
+            <Button
+                Grid.Column="4"
+                VerticalAlignment="Center"
+                Content="浏览.." />
+        </Grid>
+        <Grid
+            Grid.Row="2"
+            ColumnDefinitions="*,8,*">
+
+            <gb:GroupBox
+                Header="相同时间段照片归档"
+                Theme="{StaticResource GroupBoxClassic}">
+                <local:SameTimePhotosMergePanel />
+            </gb:GroupBox>
+            <gb:GroupBox Grid.Column="2"
+                Header="删除存在RAW的JPG"
+                Theme="{StaticResource GroupBoxClassic}">
+              <local:DeleteJpgIfExistRawPanel/>
+            </gb:GroupBox>
+        </Grid>
+        <!--<TabControl Grid.Row="2">
+            <TabItem Header="相同时间段照片归档">
+                <local:SameTimePhotosMergePanel />
+            </TabItem>
+            <TabItem Header="删除存在RAW的JPG" />
+        </TabControl>-->
+    </Grid>
+</UserControl>

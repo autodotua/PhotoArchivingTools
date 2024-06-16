@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+    <PackageReference Include="BinToss.GroupBox.Avalonia" Version="1.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="FzLib">
+      <HintPath>..\..\模块\Publish\Release\net8.0\FzLib.dll</HintPath>
+    </Reference>
+    <Reference Include="FzLib.Avalonia">
+      <HintPath>..\..\模块\Publish\Release\net8.0\FzLib.Avalonia.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\DeleteJpgIfExistRawPanel.axaml.cs">
+      <DependentUpon>DeleteJpgIfExistRawPanel.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>
