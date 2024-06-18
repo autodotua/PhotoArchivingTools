@@ -30,6 +30,7 @@
             <Button
                 Grid.Column="4"
                 VerticalAlignment="Center"
+                Command="{Binding BrowseDirCommand}"
                 Content="浏览.." />
         </Grid>
         <ScrollViewer
@@ -51,7 +52,7 @@
                     Grid.Column="2"
                     Header="删除存在RAW的JPG">
                     <local:DeleteJpgIfExistRawPanel />
-                </Expander>  
+                </Expander>
                 <Expander
                     Grid.Column="2"
                     Header="使用Exif时间更新文件修改时间">

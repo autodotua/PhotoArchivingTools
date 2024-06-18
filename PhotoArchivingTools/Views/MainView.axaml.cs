@@ -3,6 +3,7 @@ using Avalonia.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FrpGUI.Avalonia.Messages;
 using FzLib.Avalonia.Dialogs;
+using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.ViewModels;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,10 @@ public partial class MainView : UserControl
         });
 
 
+        WeakReferenceMessenger.Default.Register<GetStorageProviderMessage>(this, (_, m) =>
+        {
+            m.StorageProvider = TopLevel.GetTopLevel(this).StorageProvider;
+        });
 
         WeakReferenceMessenger.Default.Register<CommonDialogMessage>(this, async (_, m) =>
         {
