@@ -3,11 +3,11 @@ using PhotoArchivingTools.ViewModels;
 
 namespace PhotoArchivingTools.Views
 {
-    public partial class DeleteJpgIfExistRawPanel : UserControl
+    public partial class UselessJpgCleanerPanel : UserControl
     {
-        public DeleteJpgIfExistRawPanel()
+        public UselessJpgCleanerPanel()
         {
-            DataContext = new DeleteJpgIfExistRawViewModel();
+            DataContext = new UselessJpgCleanerViewModel();
             InitializeComponent();
         }
     }

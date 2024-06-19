@@ -2,6 +2,7 @@
     x:Class="PhotoArchivingTools.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="using:PhotoArchivingTools.Converters"
     RequestedThemeVariant="Default">
     <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 
@@ -19,4 +20,7 @@
             <Setter Property="MaxHeight" Value="360" />
         </Style>
     </Application.Styles>
+    <Application.Resources>
+        <c:TimeSpanConverter x:Key="TimeSpanConverter" />
+    </Application.Resources>
 </Application>

@@ -3,11 +3,11 @@ using PhotoArchivingTools.ViewModels;
 
 namespace PhotoArchivingTools.Views
 {
-    public partial class SameTimePhotosMergePanel : UserControl
+    public partial class PhotoSlimmingPanel : UserControl
     {
-        public SameTimePhotosMergePanel()
+        public PhotoSlimmingPanel()
         {
-            DataContext = new SameTimePhotosMergeModel();
+            DataContext = new PhotoSlimmingModel();
             InitializeComponent();
         }
     }

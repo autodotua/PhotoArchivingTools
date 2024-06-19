@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FrpGUI.Avalonia.Messages;
+using PhotoArchivingTools.Configs;
 using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
@@ -9,12 +10,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
-public partial class SameTimePhotosMergeModel : ViewModelBase
+public partial class TimeClassifyViewModel : ViewModelBase
 {
-    private SameTimePhotosMergeUtility sameTimePhotosMerge;
+    private TimeClassifyUtility utility;
 
-    [ObservableProperty]
-    private int minTimeIntervalMinutes = 10;
+    public TimeClassifyConfig Config { get; set; } = new TimeClassifyConfig();
+
 
     [ObservableProperty]
     private List<SimpleDirViewModel> sameTimePhotosDirs;
@@ -22,25 +23,22 @@ public partial class SameTimePhotosMergeModel : ViewModelBase
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        sameTimePhotosMerge = new SameTimePhotosMergeUtility()
-        {
-            Dir = WeakReferenceMessenger.Default.Send(new GetDirMessage()).Dir,
-            MinTimeInterval = TimeSpan.FromMinutes(MinTimeIntervalMinutes),
-        };
+        Config.Dir = GetDir();
+        utility = new TimeClassifyUtility(Config);
         await TryRunAsync(async () =>
         {
-            await sameTimePhotosMerge.InitializeAsync();
-            SameTimePhotosDirs = sameTimePhotosMerge.TargetDirs;
+            await utility.InitializeAsync();
+            SameTimePhotosDirs = utility.TargetDirs;
         }, "初始化失败");
     }
 
     [RelayCommand]
     private async Task ExecuteAsync()
     {
-        ArgumentNullException.ThrowIfNull(sameTimePhotosMerge);
+        ArgumentNullException.ThrowIfNull(utility);
         await TryRunAsync(async () =>
           {
-              await sameTimePhotosMerge.ExecuteAsync();
+              await utility.ExecuteAsync();
               SameTimePhotosDirs = null;
           }, "执行失败");
     }

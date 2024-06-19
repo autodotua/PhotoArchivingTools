@@ -1,4 +1,5 @@
-﻿using PhotoArchivingTools.ViewModels;
+﻿using PhotoArchivingTools.Configs;
+using PhotoArchivingTools.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,11 +9,43 @@ using System.Text;
 using System.Threading.Tasks;
 namespace PhotoArchivingTools.Utilities
 {
-    public class SameTimePhotosMergeUtility : UtilityBase
+    public class TimeClassifyUtility(TimeClassifyConfig config) : UtilityBase
     {
-        public TimeSpan MinTimeInterval { get; set; }
-
+        public TimeClassifyConfig Config { get; init; } = config;
         public List<SimpleDirViewModel> TargetDirs { get; set; }
+
+        public override async Task ExecuteAsync()
+        {
+            ArgumentNullException.ThrowIfNull(TargetDirs, nameof(TargetDirs));
+            await Task.Run(() =>
+            {
+                foreach (var dir in TargetDirs)
+                {
+                    string newDirName = dir.EarliestTime.ToString("yyyyMMdd-HHmmss");
+                    string newDirPath = Path.Combine(Config.Dir, newDirName);
+                    Directory.CreateDirectory(newDirPath);
+                    foreach (var sub in dir.Subs)
+                    {
+                        string targetPath = Path.Combine(newDirPath, sub.Name);
+                        Debug.WriteLine($"{sub.Path} => {targetPath}");
+                        if (sub is SimpleDirViewModel d)
+                        {
+                            Directory.Move(sub.Path, targetPath);
+                        }
+                        else if (sub is SimpleFileViewModel f)
+                        {
+                            File.Move(sub.Path, targetPath);
+                        }
+                        else
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+
+                    TargetDirs = null;
+                }
+            });
+        }
 
         public override async Task InitializeAsync()
         {
@@ -22,11 +55,11 @@ namespace PhotoArchivingTools.Utilities
 
             await Task.Run(() =>
             {
-                files = Directory.EnumerateFiles(Dir)
+                files = Directory.EnumerateFiles(Config.Dir)
                     .Select(p => new SimpleFileViewModel(p))
                     .OrderBy(p => p.Time)
                     .ToList();
-                subDirs = Directory.EnumerateDirectories(Dir)
+                subDirs = Directory.EnumerateDirectories(Config.Dir)
                     .Select(p => new SimpleDirViewModel(p))
                     .Where(p => p.FilesCount > 0)
                     .OrderBy(p => p.EarliestTime)
@@ -47,7 +80,7 @@ namespace PhotoArchivingTools.Utilities
                     if (dir == null || file.Time <= dir.EarliestTime)
                     {
                         //如果和上一个的时间间隔超过了阈值，那么新建目录存放
-                        if (file.Time - time > MinTimeInterval)
+                        if (file.Time - time > Config.MinTimeInterval)
                         {
                             SimpleDirViewModel newDir = new SimpleDirViewModel();
                             targetDirs.Add(newDir);
@@ -58,7 +91,7 @@ namespace PhotoArchivingTools.Utilities
                     }
                     else if (file == null || dir.EarliestTime <= file.Time)
                     {
-                        if (dir.EarliestTime - time > MinTimeInterval)
+                        if (dir.EarliestTime - time > Config.MinTimeInterval)
                         {
                             SimpleDirViewModel newDir = new SimpleDirViewModel();
                             targetDirs.Add(newDir);
@@ -109,39 +142,6 @@ namespace PhotoArchivingTools.Utilities
                 dir.Name = $"{dir.EarliestTime:yyyy-MM-dd HH:mm:ss} ~ {dir.LatestTime:yyyy-MM-dd HH:mm:ss}";
             }
             TargetDirs = targetDirs;
-        }
-
-        public override async Task ExecuteAsync()
-        {
-            ArgumentNullException.ThrowIfNull(TargetDirs, nameof(TargetDirs));
-            await Task.Run(() =>
-            {
-                foreach (var dir in TargetDirs)
-                {
-                    string newDirName = dir.EarliestTime.ToString("yyyyMMdd-HHmmss");
-                    string newDirPath = Path.Combine(Dir, newDirName);
-                    Directory.CreateDirectory(newDirPath);
-                    foreach (var sub in dir.Subs)
-                    {
-                        string targetPath = Path.Combine(newDirPath, sub.Name);
-                        Debug.WriteLine($"{sub.Path} => {targetPath}");
-                        if (sub is SimpleDirViewModel d)
-                        {
-                            Directory.Move(sub.Path, targetPath);
-                        }
-                        else if (sub is SimpleFileViewModel f)
-                        {
-                            File.Move(sub.Path, targetPath);
-                        }
-                        else
-                        {
-                            throw new NotImplementedException();
-                        }
-                    }
-
-                    TargetDirs = null;
-                }
-            });
         }
     }
 }

@@ -37,8 +37,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\DeleteJpgIfExistRawPanel.axaml.cs">
-      <DependentUpon>DeleteJpgIfExistRawPanel.axaml</DependentUpon>
+    <Compile Update="Views\TimeClassifyPanel.axaml.cs">
+      <DependentUpon>TimeClassifyPanel.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\UselessJpgCleanerPanel.axaml.cs">
+      <DependentUpon>UselessJpgCleanerPanel.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\UselessJpgCleanerPanel.axaml.cs">
+      <DependentUpon>UselessJpgCleanerPanel.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\PhotoSlimmingPanel.axaml.cs">
+      <DependentUpon>PhotoSlimmingPanel.axaml</DependentUpon>
     </Compile>
     <Compile Update="Views\RepairModifiedTimePanel.axaml.cs">
       <SubType>Code</SubType>

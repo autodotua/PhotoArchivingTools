@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FrpGUI.Avalonia.Messages;
+using PhotoArchivingTools.Configs;
 using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
@@ -10,12 +11,11 @@ using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
 
-public partial class DeleteJpgIfExistRawViewModel : ViewModelBase
+public partial class UselessJpgCleanerViewModel : ViewModelBase
 {
-    private DeleteJpgIfExistRawUtility deleteJpgIfExistRaw;
+    private UselessJpgCleanerUtility utility;
 
-    [ObservableProperty]
-    private string rawExtension = "DNG";
+    public UselessJpgCleanerConfig Config { get; set; } = new UselessJpgCleanerConfig();
 
     [ObservableProperty]
     private List<SimpleFileViewModel> deletingJpgFiles;
@@ -23,15 +23,12 @@ public partial class DeleteJpgIfExistRawViewModel : ViewModelBase
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        deleteJpgIfExistRaw = new DeleteJpgIfExistRawUtility()
-        {
-            Dir = WeakReferenceMessenger.Default.Send(new GetDirMessage()).Dir,
-            RawExtension = RawExtension
-        };
+        Config.Dir = GetDir();
+        utility = new UselessJpgCleanerUtility(Config);
         await TryRunAsync(async () =>
        {
-           await deleteJpgIfExistRaw.InitializeAsync();
-           DeletingJpgFiles = deleteJpgIfExistRaw.DeletingJpgFiles;
+           await utility.InitializeAsync();
+           DeletingJpgFiles = utility.DeletingJpgFiles;
        }, "初始化失败");
     }
 
@@ -40,8 +37,8 @@ public partial class DeleteJpgIfExistRawViewModel : ViewModelBase
     {
         return TryRunAsync(async () =>
         {
-            await deleteJpgIfExistRaw.ExecuteAsync();
-            deleteJpgIfExistRaw = null;
+            await utility.ExecuteAsync();
+            utility = null;
             DeletingJpgFiles = null;
         }, "执行失败");
 

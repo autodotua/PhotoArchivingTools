@@ -1,4 +1,5 @@
-﻿using PhotoArchivingTools.ViewModels;
+﻿using PhotoArchivingTools.Configs;
+using PhotoArchivingTools.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,9 +8,10 @@ using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.Utilities
 {
-    public class DeleteJpgIfExistRawUtility : UtilityBase
+    public class UselessJpgCleanerUtility(UselessJpgCleanerConfig config) : UtilityBase
     {
-        public string RawExtension { get; set; }
+        public UselessJpgCleanerConfig Config { get; init; } = config;
+
         public List<SimpleFileViewModel> DeletingJpgFiles { get; set; }
         public override Task ExecuteAsync()
         {
@@ -30,12 +32,12 @@ namespace PhotoArchivingTools.Utilities
             return Task.Run(() =>
             {
                 var jpgs = Directory
-                    .EnumerateFiles(Dir, "*.jp*g", SearchOption.AllDirectories)
-                    .Where(p => p.EndsWith(".jpg", System.StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".jpeg", System.StringComparison.InvariantCultureIgnoreCase))
+                    .EnumerateFiles(Config.Dir, "*.jp*g", SearchOption.AllDirectories)
+                    .Where(p => p.EndsWith(".jpg", System.StringComparison.InvariantCultureIgnoreCase) || p.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase))
                     .ToList();
                 foreach (var jpg in jpgs)
                 {
-                    var rawFile = $"{Path.Combine(Path.GetDirectoryName(jpg), Path.GetFileNameWithoutExtension(jpg))}.{RawExtension}";
+                    var rawFile = $"{Path.Combine(Path.GetDirectoryName(jpg), Path.GetFileNameWithoutExtension(jpg))}.{Config.RawExtension}";
                     if (File.Exists(rawFile))
                     {
                         DeletingJpgFiles.Add(new SimpleFileViewModel(jpg));

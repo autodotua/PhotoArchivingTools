@@ -1,5 +1,6 @@
 ﻿using FzLib;
 using MetadataExtractor;
+using PhotoArchivingTools.Configs;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -10,20 +11,17 @@ using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.Utilities
 {
-    public class RepairModifiedTimeUtility : UtilityBase
+    public class RepairModifiedTimeUtility(RepairModifiedTimeConfig config) : UtilityBase
     {
-        public int ThreadCount { get; set; }
-        public TimeSpan MaxDurationTolerance { get; set; }
-
-        private object lockObj = new object();
-        public List<string> UpdatingFilesAndMessages { get; private set; }
-        public List<string> ErrorFilesAndMessages { get; private set; }
+        public string[] Extensions = { "jpg", "jpeg", "heif", "heic" };
+        private ConcurrentDictionary<FileInfo, string> errorFiles = new ConcurrentDictionary<FileInfo, string>();
         private ConcurrentDictionary<FileInfo, DateTime> fileExifTimes;
 
-        private ConcurrentDictionary<FileInfo, string> errorFiles = new ConcurrentDictionary<FileInfo, string>();
-
-        public string[] Extensions = { "jpg", "jpeg", "heif", "heic" };
         Regex rRepairTime;
+
+        public RepairModifiedTimeConfig Config { get; set; } = config;
+        public List<string> ErrorFilesAndMessages { get; private set; }
+        public List<string> UpdatingFilesAndMessages { get; private set; }
         public override Task ExecuteAsync()
         {
             ErrorFilesAndMessages = new List<string>();
@@ -45,14 +43,14 @@ namespace PhotoArchivingTools.Utilities
         public override async Task InitializeAsync()
         {
             fileExifTimes = new ConcurrentDictionary<FileInfo, DateTime>();
-            errorFiles =new ConcurrentDictionary<FileInfo, string>();
+            errorFiles = new ConcurrentDictionary<FileInfo, string>();
             rRepairTime = new Regex(@$"\.({string.Join('|', Extensions)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             await Task.Run(() =>
             {
-                var files = new DirectoryInfo(Dir).EnumerateFiles("*", SearchOption.AllDirectories);
-                if (ThreadCount > 1)
+                var files = new DirectoryInfo(Config.Dir).EnumerateFiles("*", SearchOption.AllDirectories);
+                if (Config.ThreadCount > 1)
                 {
-                    var options = new ParallelOptions() { MaxDegreeOfParallelism = ThreadCount };
+                    var options = new ParallelOptions() { MaxDegreeOfParallelism = Config.ThreadCount };
                     Parallel.ForEach(files, options, Check);
                 }
                 else
@@ -61,12 +59,39 @@ namespace PhotoArchivingTools.Utilities
                 }
             });
             ErrorFilesAndMessages = errorFiles
-                .Select(p => $"{Path.GetRelativePath(Dir, p.Key.FullName)}：{p.Value}")
+                .Select(p => $"{Path.GetRelativePath(Config.Dir, p.Key.FullName)}：{p.Value}")
                 .ToList();
             UpdatingFilesAndMessages = fileExifTimes
-                .Select(p => $"{Path.GetRelativePath(Dir, p.Key.FullName)}    {p.Key.LastWriteTime} => {p.Value}")
+                .Select(p => $"{Path.GetRelativePath(Config.Dir, p.Key.FullName)}    {p.Key.LastWriteTime} => {p.Value}")
                 .ToList();
         }
+        private void Check(FileInfo file)
+        {
+            if (rRepairTime.IsMatch(file.Name))
+            {
+                DateTime? exifTime;
+                try
+                {
+                    exifTime = FindExifTime(file.FullName);
+                }
+                catch (Exception ex)
+                {
+                    errorFiles.TryAdd(file, ex.Message);
+                    return;
+                }
+
+                if (exifTime.HasValue)
+                {
+                    var fileTime = file.LastWriteTime;
+                    var duration = (exifTime.Value - fileTime).Duration();
+                    if (duration > Config.MaxDurationTolerance)
+                    {
+                        fileExifTimes.TryAdd(file, exifTime.Value);
+                    }
+                }
+            }
+        }
+
         private DateTime? FindExifTime(string file)
         {
             IReadOnlyList<MetadataExtractor.Directory> directories = ImageMetadataReader.ReadMetadata(file);
@@ -91,34 +116,6 @@ namespace PhotoArchivingTools.Utilities
             }
 
             return null;
-        }
-
-
-        private void Check(FileInfo file)
-        {
-            if (rRepairTime.IsMatch(file.Name))
-            {
-                DateTime? exifTime;
-                try
-                {
-                    exifTime = FindExifTime(file.FullName);
-                }
-                catch (Exception ex)
-                {
-                    errorFiles.TryAdd(file, ex.Message);
-                    return;
-                }
-
-                if (exifTime.HasValue)
-                {
-                    var fileTime = file.LastWriteTime;
-                    var duration = (exifTime.Value - fileTime).Duration();
-                    if (duration > MaxDurationTolerance)
-                    {
-                        fileExifTimes.TryAdd(file, exifTime.Value);
-                    }
-                }
-            }
         }
     }
 }

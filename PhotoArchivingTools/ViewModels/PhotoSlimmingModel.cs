@@ -11,28 +11,22 @@ using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
 
-public partial class RepairModifiedTimeModel : ViewModelBase
+public partial class PhotoSlimmingModel : ViewModelBase
 {
-   private RepairModifiedTimeUtility utility;
+    private PhotoSlimmingUtility utility;
 
-    public RepairModifiedTimeConfig Config { get; set; } = new RepairModifiedTimeConfig(); 
-
-    [ObservableProperty]
-    private List<string> updatingFiles;
-
-    [ObservableProperty]
-    private List<string> errorFiles;
+    public PhotoSlimmingConfig Config { get; set; } = new PhotoSlimmingConfig();
 
     [RelayCommand]
     private async Task InitializeAsync()
     {
         Config.Dir = GetDir();
-        utility = new RepairModifiedTimeUtility(Config);
+        utility = new PhotoSlimmingUtility(Config);
         await TryRunAsync(async () =>
         {
-            await utility.InitializeAsync();
-            UpdatingFiles = utility.UpdatingFilesAndMessages;
-            ErrorFiles = utility.ErrorFilesAndMessages;
+            //await repairModifiedTimeUtility.InitializeAsync();
+            //UpdatingFiles = repairModifiedTimeUtility.UpdatingFilesAndMessages;
+            //ErrorFiles = repairModifiedTimeUtility.ErrorFilesAndMessages;
         }, "初始化失败");
     }
 
@@ -42,10 +36,10 @@ public partial class RepairModifiedTimeModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(utility, nameof(utility));
         return TryRunAsync(async () =>
         {
-            await utility.ExecuteAsync();
-            UpdatingFiles = null;
-            ErrorFiles = utility.ErrorFilesAndMessages;
-            utility = null;
+            //await repairModifiedTimeUtility.ExecuteAsync();
+            //UpdatingFiles = null;
+            //ErrorFiles = repairModifiedTimeUtility.ErrorFilesAndMessages;
+            //repairModifiedTimeUtility = null;
         }, "执行失败");
 
     }
