@@ -9,275 +9,150 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Directory = System.IO.Directory;
+using ImageMagick;
 
 namespace PhotoArchivingTools.Utilities
 {
     public class PhotoSlimmingUtility : UtilityBase
     {
-        public PhotoSlimmingConfig Config { get; set; }
-
+        private Regex rBlack;
+        private Regex rCompress;
+        private Regex rCopy;
+        private Regex rWhite;
         public PhotoSlimmingUtility(PhotoSlimmingConfig config)
         {
-            Initialize();
             Config = config;
-        }
-
-        public override Task ExecuteAsync()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override Task InitializeAsync()
-        {
-            throw new System.NotImplementedException();
-        }
-
-
-        private readonly ConsoleColor defaultConsoleColor = Console.ForegroundColor;
-
-        private int allFilesCount = 0;
-
-        private List<FileInfo> compressSkipFiles = new List<FileInfo>();
-
-        private List<FileInfo> compressFiles = new List<FileInfo>();
-
-        private long compressFilesLength = 0;
-
-        private List<FileInfo> copySkipFiles = new List<FileInfo>();
-
-        private List<FileInfo> copyFiles = new List<FileInfo>();
-
-        private long copyFilesLength = 0;
-
-        private List<string> deleteFiles = new List<string>();
-
-        private int excludeFilesCount = 0;
-
-        private int index = 0;
-
-        private Regex rCompress;
-
-        private Regex rCopy;
-
-        private Regex rBlack;
-
-        private Regex rWhite;
-
-        private Regex rRepairTime;
-
-        private ConcurrentDictionary<string, object> sourceFiles = new ConcurrentDictionary<string, object>();
-
-        private static readonly Action<string> W = Console.Write;
-
-        private static readonly Action<string> WL = Console.WriteLine;
-
-        public void Start()
-        {
-            Console.WriteLine("请输入需要进行的操作：");
-            Console.WriteLine("1：复制和压缩指定文件");
-            Console.WriteLine("2：删除目标目录中已经不存在对应源文件的文件");
-            Console.WriteLine("3：将文件修改时间修复为照片Exif时间");
-            int index;
-            string input;
-            do
-            {
-                input = Console.ReadLine().Trim();
-            }
-            while (!int.TryParse(input, out index) && index is <= 3 and >= 1);
-            Console.WriteLine();
-            switch (index)
-            {
-                case 1: CopyAndCompress(); break;
-                case 2: DeleteFilesThatExistedInDistDirButNotInSrcDir(); break;
-                case 3: RepairModifiedTime(); break;
-            }
-            Console.ReadKey();
-        }
-
-        public void CopyAndCompress()
-        {
-            WL("正在寻找文件");
-
-            CheckFiles(true);
-            WL($"共找到{allFilesCount}个文件，筛选{sourceFiles.Count}个，排除了{excludeFilesCount}个");
-            WL($"直接复制{copyFiles.Count}个（跳过{copySkipFiles.Count}个），大小{copyFilesLength / (1024 * 1024)}MB");
-            WL($"需要压缩{compressFiles.Count}个（跳过{compressSkipFiles.Count}个），大小{compressFilesLength / (1024 * 1024)}MB");
-            WL($"按回车键继续...");
-            while (Console.ReadKey().Key != ConsoleKey.Enter)
-            {
-            }
-            WL("");
-
-            if (Config.ClearAllBeforeRunning)
-            {
-                if (Directory.Exists(Config.DistDir))
-                {
-                    for (int i = 5; i >= 1; i--)
-                    {
-                        WL($"目标目录{Config.DistDir}已存在，{i}秒后将清空目录");
-                        Thread.Sleep(1000);
-                    }
-                    Directory.Delete(Config.DistDir, true);
-                }
-            }
-            if (!Directory.Exists(Config.DistDir))
-            {
-                Directory.CreateDirectory(Config.DistDir);
-            }
-
-            WL("开始压缩文件");
-            Compress();
-            WL("开始复制文件");
-            index = 0;
-            Copy();
-            WL("完成");
-        }
-
-        public void Initialize()
-        {
             rCopy = new Regex(@$"\.({string.Join('|', Config.CopyDirectlyExtensions)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             rCompress = new Regex(@$"\.({string.Join('|', Config.CompressExtensions)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            rRepairTime = new Regex(@$"\.({string.Join('|', Config.RepairModifiedTimeExtensions)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             rBlack = new Regex(Config.BlackList);
             rWhite = new Regex(string.IsNullOrWhiteSpace(Config.WhiteList) ? ".*" : Config.WhiteList);
         }
 
-        private void CheckFiles(bool usedForCompressAndCopy)
+        public enum TaskType
         {
-            foreach (var file in new DirectoryInfo(Config.SourceDir).EnumerateFiles("*", SearchOption.AllDirectories))
+            Compress,
+            Copy,
+            Delete
+        }
+        public SlimmingFilesInfo CompressFiles { get; private set; } 
+        public PhotoSlimmingConfig Config { get; set; }
+        public SlimmingFilesInfo CopyFiles { get; private set; } 
+
+        public SlimmingFilesInfo DeleteFiles { get; private set; } 
+
+        public override Task ExecuteAsync()
+        {
+            return Task.Run(() =>
             {
-                if (++allFilesCount % 10 == 0)
+                if (Config.ClearAllBeforeRunning)
                 {
-                    Console.CursorLeft = 0;
-                    W($"已搜索{allFilesCount}个文件");
+                    if (Directory.Exists(Config.DistDir))
+                    {
+                        Directory.Delete(Config.DistDir, true);
+                    }
+                }
+                if (!Directory.Exists(Config.DistDir))
+                {
+                    Directory.CreateDirectory(Config.DistDir);
                 }
 
-                if (rBlack.IsMatch(file.FullName)
-                    || !rWhite.IsMatch(Path.GetFileNameWithoutExtension(file.Name)))
-                {
-                    excludeFilesCount++;
-                    continue;
-                }
 
-                if (rCompress.IsMatch(file.Name))
-                {
-                    if (NeedProcess(TaskType.Compress, file))
-                    {
-                        sourceFiles.TryAdd(Path.GetRelativePath(Config.SourceDir, file.FullName), null);
-                        compressFiles.Add(file);
-                        compressFilesLength += file.Length;
-                        Console.CursorLeft = 0;
-                        WL($"需要压缩：{file.FullName}");
-                    }
-                    else
-                    {
-                        compressSkipFiles.Add(file);
-                    }
-                }
-                else if (rCopy.IsMatch(file.Name))
-                {
-                    if (NeedProcess(TaskType.Copy, file))
-                    {
-                        sourceFiles.TryAdd(Path.GetRelativePath(Config.SourceDir, file.FullName), null);
-                        copyFiles.Add(file);
-                        copyFilesLength += file.Length;
-                        Console.CursorLeft = 0;
-                        WL($"需要复制：{file.FullName}");
-                    }
-                    else
-                    {
-                        copySkipFiles.Add(file);
-                    }
-                }
+                Compress();
 
-            }
-            WL("");
-            WL("");
+                Copy();
+
+                foreach (var file in DeleteFiles.ProcessingFiles)
+                {
+                    File.Delete(file.FullName);
+                }
+            });
         }
 
-        private bool NeedProcess(TaskType type, FileInfo file)
+        public override Task InitializeAsync()
         {
-            if (type is TaskType.Delete)
+            CompressFiles = new SlimmingFilesInfo(Config.SourceDir);
+            CopyFiles = new SlimmingFilesInfo(Config.SourceDir);
+            DeleteFiles = new SlimmingFilesInfo(Config.SourceDir);
+
+            return Task.Run(() =>
             {
-                return true;
-            }
-            if (!Config.SkipIfExist)
-            {
-                return true;
-            }
+                foreach (var file in new DirectoryInfo(Config.SourceDir).EnumerateFiles("*", SearchOption.AllDirectories))
+                {
+                    if (rBlack.IsMatch(file.FullName)
+                        || !rWhite.IsMatch(Path.GetFileNameWithoutExtension(file.Name)))
+                    {
+                        continue;
+                    }
+
+                    if (rCompress.IsMatch(file.Name))
+                    {
+                        if (NeedProcess(TaskType.Compress, file))
+                        {
+                            CompressFiles.Add(file);
+                        }
+                        else
+                        {
+                            CompressFiles.AddSkipped(file);
+                        }
+                    }
+                    else if (rCopy.IsMatch(file.Name))
+                    {
+                        if (NeedProcess(TaskType.Copy, file))
+                        {
+                            CopyFiles.Add(file);
+                        }
+                        else
+                        {
+                            CopyFiles.AddSkipped(file);
+                        }
+                    }
+
+                }
 
 
-            var distFile = new FileInfo(GetDistPath(file.FullName, type is TaskType.Copy ? null : Config.OutputFormat, false, out _));
+                var desiredDistFiles = CopyFiles.SkippedFiles
+                    .Select(file => GetDistPath(file.FullName, null,  out _))
+                     .Concat(CompressFiles.SkippedFiles
+                        .Select(file => GetDistPath(file.FullName, Config.OutputFormat,  out _)))
+                     .ToHashSet();
 
-            if (distFile.Exists && (type is TaskType.Compress || file.Length == distFile.Length && file.LastWriteTime == distFile.LastWriteTime))
-            {
-                return false;
-            }
 
-            return true;
+                foreach (var file in Directory
+                    .EnumerateFiles(Config.DistDir, "*", SearchOption.AllDirectories)
+                     .Where(p => !rBlack.IsMatch(p)))
+                {
+                    if (!desiredDistFiles.Contains(file))
+                    {
+                        DeleteFiles.Add(new FileInfo(file));
+                    }
+                }
 
+            });
         }
-
         private void Compress()
         {
             if (Config.Thread != 1)
             {
                 if (Config.Thread <= 0)
                 {
-                    Parallel.ForEach(compressFiles, CompressSingle);
+                    Parallel.ForEach(CompressFiles.ProcessingFiles, CompressSingle);
                 }
                 else
                 {
-                    Parallel.ForEach(compressFiles, new ParallelOptions() { MaxDegreeOfParallelism = Config.Thread }, CompressSingle);
+                    Parallel.ForEach(CompressFiles.ProcessingFiles, new ParallelOptions() { MaxDegreeOfParallelism = Config.Thread }, CompressSingle);
                 }
             }
             else
             {
-                foreach (var file in compressFiles)
+                foreach (var file in CompressFiles.ProcessingFiles)
                 {
                     CompressSingle(file);
                 }
             }
         }
 
-        private string GetDistPath(string sourceFileName, string newExtension, out string subPath)
-        {
-            return GetDistPath(sourceFileName, newExtension, true, out subPath);
-        }
-
-        private string GetDistPath(string sourceFileName, string newExtension, bool addToSet, out string subPath)
-        {
-            char spliiter = sourceFileName.Contains('\\') ? '\\' : '/';
-            subPath = Path.IsPathRooted(sourceFileName) ? Path.GetRelativePath(Config.SourceDir, sourceFileName) : sourceFileName;
-            string filename = Path.GetFileName(subPath);
-            string dir = Path.GetDirectoryName(subPath);
-            int level = dir.Count(p => p == spliiter) + 1;
-            if (level > Config.DeepestLevel)
-            {
-                string[] dirParts = dir.Split(spliiter);
-                dir = string.Join(spliiter, dirParts[..Config.DeepestLevel]);
-                filename = $"{string.Join('-', dirParts[Config.DeepestLevel..])}-{filename}";
-                subPath = Path.Combine(dir, filename);
-            }
-            if (addToSet)
-            {
-                sourceFiles.TryAdd(subPath, null);
-            }
-            if (newExtension != null)
-            {
-                subPath = Path.Combine(dir, Path.GetFileNameWithoutExtension(filename) + "." + newExtension);
-            }
-            return Path.Combine(Config.DistDir, subPath);
-
-        }
-
         private void CompressSingle(FileInfo file)
         {
-            int thisIndex = 0;
-            lock (lockObj)
-            {
-                thisIndex = index++;
-            }
             string distPath = GetDistPath(file.FullName, Config.OutputFormat, out string subPath);
             if (File.Exists(distPath))
             {
@@ -317,27 +192,18 @@ namespace PhotoArchivingTools.Utilities
                 if (distFile.Length > file.Length)
                 {
                     file.CopyTo(distPath, true);
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    WL($"{thisIndex}\t\t压缩{subPath}后，大小大于原文件");
-                    Console.ForegroundColor = ConsoleColor.White;
                 }
 
-                WL($"{thisIndex}\t\t压缩  {file.Length / 1024d / 1024:0.00}MB => {distFile.Length / 1024d / 1024:0.00}MB    \t{subPath}");
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                WL($"{thisIndex}\t\t压缩{subPath}失败：{ex.Message}");
-                Console.ForegroundColor = ConsoleColor.White;
             }
         }
 
         private void Copy()
         {
-            foreach (var file in copyFiles)
+            foreach (var file in CopyFiles.ProcessingFiles)
             {
-                index++;
-
                 string distPath = GetDistPath(file.FullName, null, out string subPath);
                 if (File.Exists(distPath))
                 {
@@ -348,55 +214,8 @@ namespace PhotoArchivingTools.Utilities
                 {
                     Directory.CreateDirectory(dir);
                 }
-                W($"{index}\t\t正在复制 {subPath}...");
                 file.CopyTo(distPath);
-                WL("完成");
             }
-        }
-
-        private void DeleteFilesThatExistedInDistDirButNotInSrcDir()
-        {
-            WL("正在寻找文件");
-            CheckFiles(false);
-            WL($"共找到{sourceFiles.Count}个需要的文件");
-            WL("正在寻找不需要的文件");
-
-            int index = 0;
-
-            var desiredDistFiles = copySkipFiles
-                .Select(file => GetDistPath(file.FullName, null, false, out _))
-                 .Concat(compressSkipFiles
-                    .Select(file => GetDistPath(file.FullName, Config.OutputFormat, false, out _)))
-                 .ToHashSet();
-
-
-            foreach (var file in Directory
-                .EnumerateFiles(Config.DistDir, "*", SearchOption.AllDirectories)
-                 .Where(p => !rBlack.IsMatch(p)))
-            {
-                //string subPath = Path.GetRelativePath(Config.DistDir, file);
-                if (!desiredDistFiles.Contains(file))
-                {
-                    WL(++index + "：" + file);
-                    deleteFiles.Add(file);
-                }
-            }
-            if (deleteFiles.Count == 0)
-            {
-                WL($"没有需要删除的文件");
-                return;
-            }
-            WL($"按回车键开始删除");
-            while (Console.ReadKey().Key != ConsoleKey.Enter)
-            {
-            }
-            index = 0;
-            foreach (var file in deleteFiles)
-            {
-                File.Delete(file);
-                WL(++index + "：已删除 " + file);
-            }
-            WL($"完成");
         }
 
         private DateTime? FindExifTime(string file)
@@ -426,5 +245,93 @@ namespace PhotoArchivingTools.Utilities
 
             return null;
         }
+
+        private string GetDistPath(string sourceFileName, string newExtension, out string subPath)
+        {
+            char spliiter = sourceFileName.Contains('\\') ? '\\' : '/';
+            subPath = Path.IsPathRooted(sourceFileName) ? Path.GetRelativePath(Config.SourceDir, sourceFileName) : sourceFileName;
+            string filename = Path.GetFileName(subPath);
+            string dir = Path.GetDirectoryName(subPath);
+            int level = dir.Count(p => p == spliiter) + 1;
+            if (level > Config.DeepestLevel)
+            {
+                string[] dirParts = dir.Split(spliiter);
+                dir = string.Join(spliiter, dirParts[..Config.DeepestLevel]);
+                filename = $"{string.Join('-', dirParts[Config.DeepestLevel..])}-{filename}";
+                subPath = Path.Combine(dir, filename);
+            }
+
+            if (newExtension != null)
+            {
+                subPath = Path.Combine(dir, Path.GetFileNameWithoutExtension(filename) + "." + newExtension);
+            }
+            return Path.Combine(Config.DistDir, subPath);
+
+        }
+
+        private bool NeedProcess(TaskType type, FileInfo file)
+        {
+            if (type is TaskType.Delete)
+            {
+                return true;
+            }
+            if (!Config.SkipIfExist)
+            {
+                return true;
+            }
+
+
+            var distFile = new FileInfo(GetDistPath(file.FullName, type is TaskType.Copy ? null : Config.OutputFormat,  out _));
+
+            if (distFile.Exists && (type is TaskType.Compress || file.Length == distFile.Length && file.LastWriteTime == distFile.LastWriteTime))
+            {
+                return false;
+            }
+
+            return true;
+
+        }
+    }
+    public class SlimmingFilesInfo
+    {
+        private string rootDir;
+
+        public SlimmingFilesInfo(string rootDir)
+        {
+            this.rootDir = rootDir;
+        }
+
+        private List<FileInfo> processingFiles = new List<FileInfo>();
+
+        private List<FileInfo> skippedFiles = new List<FileInfo>();
+
+        public IReadOnlyList<FileInfo> ProcessingFiles => processingFiles.AsReadOnly();
+
+        public long ProcessingFilesLength { get; private set; } = 0;
+
+        public IReadOnlyList<FileInfo> SkippedFiles => skippedFiles.AsReadOnly();
+
+        public IReadOnlyList<string> ProcessingFilesRelativePaths => processingFiles
+            .Select(p => Path.GetRelativePath(rootDir, p.FullName))
+            .ToList().AsReadOnly();
+
+        public void Add(FileInfo file)
+        {
+            processingFiles.Add(file);
+            ProcessingFilesLength += file.Length;
+        }
+
+        public void AddSkipped(FileInfo file)
+        {
+            skippedFiles.Add(file);
+        }
+
+        public void Clear()
+        {
+            processingFiles = null;
+            skippedFiles = null;
+            ProcessingFilesLength = 0;
+        }
+
     }
 }

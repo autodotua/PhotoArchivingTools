@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using PhotoArchivingTools.Configs;
 using PhotoArchivingTools.ViewModels;
 using PhotoArchivingTools.Views;
 using System;
@@ -33,9 +34,11 @@ public partial class App : Application
             {
                 DataContext = new MainViewModel()
             };
+            desktop.Exit += Desktop_Exit;
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
+            throw new NotSupportedException();
             singleViewPlatform.MainView = new MainView
             {
                 DataContext = new MainViewModel()
@@ -44,4 +47,12 @@ public partial class App : Application
 
         base.OnFrameworkInitializationCompleted();
     }
+
+    private void Desktop_Exit(object sender, ControlledApplicationLifetimeExitEventArgs e)
+    {
+        Exit?.Invoke(sender, e);
+        AppConfig.Instance.Save();
+    }
+
+    public event EventHandler<ControlledApplicationLifetimeExitEventArgs> Exit;
 }

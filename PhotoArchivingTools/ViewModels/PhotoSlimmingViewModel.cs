@@ -15,9 +15,26 @@ using System.Threading.Tasks;
 namespace PhotoArchivingTools.ViewModels;
 public partial class PhotoSlimmingViewModel : ViewModelBase
 {
+    public PhotoSlimmingViewModel()
+    {
+        (App.Current as App).Exit += (s, e) =>
+        {
+            AppConfig.Instance.PhotoSlimmingConfigs = new List<PhotoSlimmingConfig>(Configs);
+        };
+    }
+
     private PhotoSlimmingUtility utility;
 
-    public ObservableCollection<PhotoSlimmingConfig> Configs { get; set; } = new ObservableCollection<PhotoSlimmingConfig>() { new PhotoSlimmingConfig() };
+    public ObservableCollection<PhotoSlimmingConfig> Configs { get; set; } = new ObservableCollection<PhotoSlimmingConfig>(AppConfig.Instance.PhotoSlimmingConfigs);
+
+    [ObservableProperty]
+    private SlimmingFilesInfo compressFiles;
+
+    [ObservableProperty]
+    private SlimmingFilesInfo copyFiles;
+
+    [ObservableProperty]
+    private SlimmingFilesInfo deleteFiles;
 
     [ObservableProperty]
     private PhotoSlimmingConfig config;
@@ -25,10 +42,10 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     [RelayCommand]
     private async Task CreateAsync()
     {
-        var message = new DialogHostMessage(new PhotoSlimmingConfigDialog()) ;
+        var message = new DialogHostMessage(new PhotoSlimmingConfigDialog());
         WeakReferenceMessenger.Default.Send(message);
         var result = await message.Task;
-        if(result is PhotoSlimmingConfig config)
+        if (result is PhotoSlimmingConfig config)
         {
             Configs.Add(config);
         }
@@ -37,7 +54,7 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     [RelayCommand]
     private async Task EditAsync()
     {
-        var message = new DialogHostMessage(new PhotoSlimmingConfigDialog(Config)) ;
+        var message = new DialogHostMessage(new PhotoSlimmingConfigDialog(Config));
         WeakReferenceMessenger.Default.Send(message);
         var result = await message.Task;
         if (result is PhotoSlimmingConfig config)
@@ -54,15 +71,15 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task InitializeAsync(bool copy)
+    private async Task InitializeAsync()
     {
-        Config.Dir = GetDir();
         utility = new PhotoSlimmingUtility(Config);
         await TryRunAsync(async () =>
         {
-            //await repairModifiedTimeUtility.InitializeAsync();
-            //UpdatingFiles = repairModifiedTimeUtility.UpdatingFilesAndMessages;
-            //ErrorFiles = repairModifiedTimeUtility.ErrorFilesAndMessages;
+            await utility.InitializeAsync();
+            CopyFiles = utility.CopyFiles;
+            CompressFiles = utility.CompressFiles;
+            DeleteFiles = utility.DeleteFiles;
         }, "初始化失败");
     }
 
@@ -72,10 +89,11 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         ArgumentNullException.ThrowIfNull(utility, nameof(utility));
         return TryRunAsync(async () =>
         {
-            //await repairModifiedTimeUtility.ExecuteAsync();
-            //UpdatingFiles = null;
-            //ErrorFiles = repairModifiedTimeUtility.ErrorFilesAndMessages;
-            //repairModifiedTimeUtility = null;
+            await utility.ExecuteAsync();
+            utility = null;
+            CopyFiles = null;
+            CompressFiles = null;
+            DeleteFiles = null;
         }, "执行失败");
 
     }

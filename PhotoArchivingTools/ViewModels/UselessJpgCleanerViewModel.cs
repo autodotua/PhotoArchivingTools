@@ -15,7 +15,7 @@ public partial class UselessJpgCleanerViewModel : ViewModelBase
 {
     private UselessJpgCleanerUtility utility;
 
-    public UselessJpgCleanerConfig Config { get; set; } = new UselessJpgCleanerConfig();
+    public UselessJpgCleanerConfig Config { get; set; } = AppConfig.Instance.UselessJpgCleanerConfig;
 
     [ObservableProperty]
     private List<SimpleFileViewModel> deletingJpgFiles;

@@ -14,7 +14,7 @@ public partial class TimeClassifyViewModel : ViewModelBase
 {
     private TimeClassifyUtility utility;
 
-    public TimeClassifyConfig Config { get; set; } = new TimeClassifyConfig();
+    public TimeClassifyConfig Config { get; set; } =AppConfig.Instance.TimeClassifyConfig;
 
 
     [ObservableProperty]

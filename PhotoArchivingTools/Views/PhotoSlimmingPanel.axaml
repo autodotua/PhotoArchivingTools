@@ -40,31 +40,27 @@
                     IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
             </StackPanel>
         </Grid>
-        <StackPanel
+
+        <Button
             Grid.Row="4"
-            Orientation="Horizontal"
-            Spacing="8">
-            <RadioButton
-                x:Name="rbtnCopy"
-                Content="复制和压缩指定文件"
-                IsChecked="True" />
-            <RadioButton Content="删除目标目录中已经不存在对应源文件的文件" />
-            <Button
-                Grid.Row="4"
-                Command="{Binding InitializeCommand}"
-                CommandParameter="{Binding #rbtnCopy.IsChecked}"
-                Content="初始化" />
-        </StackPanel>
+            Command="{Binding InitializeCommand}"
+            Content="初始化"
+            IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
         <Grid
             Grid.Row="6"
-            ColumnDefinitions="*,8,*">
-            <gb:GroupBox Header="待更新文件">
-                <ListBox ItemsSource="{Binding UpdatingFiles}" />
+            ColumnDefinitions="*,8,*,8,*">
+            <gb:GroupBox Header="待复制">
+                <ListBox ItemsSource="{Binding CopyFiles.ProcessingFilesRelativePaths}" />
             </gb:GroupBox>
             <gb:GroupBox
                 Grid.Column="2"
-                Header="错误文件">
-                <ListBox ItemsSource="{Binding ErrorFiles}" />
+                Header="待压缩">
+                <ListBox ItemsSource="{Binding CompressFiles.ProcessingFilesRelativePaths}" />
+            </gb:GroupBox>
+            <gb:GroupBox
+                Grid.Column="4"
+                Header="待删除">
+                <ListBox ItemsSource="{Binding DeleteFiles.ProcessingFilesRelativePaths}" />
             </gb:GroupBox>
 
         </Grid>

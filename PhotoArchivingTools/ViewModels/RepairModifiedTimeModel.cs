@@ -15,7 +15,7 @@ public partial class RepairModifiedTimeModel : ViewModelBase
 {
    private RepairModifiedTimeUtility utility;
 
-    public RepairModifiedTimeConfig Config { get; set; } = new RepairModifiedTimeConfig(); 
+    public RepairModifiedTimeConfig Config { get; set; } =AppConfig.Instance.RepairModifiedTimeConfig;
 
     [ObservableProperty]
     private List<string> updatingFiles;

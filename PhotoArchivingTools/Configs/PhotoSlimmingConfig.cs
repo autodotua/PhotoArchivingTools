@@ -21,10 +21,6 @@ namespace PhotoArchivingTools.Configs
         /// </summary>
         public List<string> CopyDirectlyExtensions { get; set; } = ["png", "gpx", "doc", "docx", "ppt", "pptx", "xls", "xlsx", "pdf"];
         /// <summary>
-        /// 需要修复修改时间的文件的后缀名
-        /// </summary>
-        public List<string> RepairModifiedTimeExtensions { get; set; } = ["jpg", "jpeg", "heif", "heic"];
-        /// <summary>
         /// 源目录
         /// </summary>
         public string SourceDir { get; set; } = @"C:\源\目录";
