@@ -21,6 +21,14 @@
         </Style>
     </Application.Styles>
     <Application.Resources>
-        <c:TimeSpanConverter x:Key="TimeSpanConverter" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://FzLib.Avalonia/Converters/Converters.axaml" />
+                <ResourceInclude Source="avares://FzLib.Avalonia/Dialogs/DialogHostStyles.axaml" />
+                <ResourceInclude Source="avares://PhotoArchivingTools/Controls/FormItemStyle.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <c:TimeSpanConverter x:Key="TimeSpanConverter" />
+            <c:StringListConverter x:Key="StringListConverter" />
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

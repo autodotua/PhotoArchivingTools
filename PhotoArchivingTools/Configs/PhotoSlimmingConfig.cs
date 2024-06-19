@@ -32,10 +32,7 @@ namespace PhotoArchivingTools.Configs
         /// 目标目录
         /// </summary>
         public string DistDir { get; set; } = @"C:\目标\目录";
-        /// <summary>
-        /// 需要修复文件修改时间的目录
-        /// </summary>
-        public string RepairTimeDir { get; set; } = @"O:\要修复文件修改时间\的目录";
+
         /// <summary>
         /// 黑名单（正则）（匹配路径）
         /// </summary>

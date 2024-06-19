@@ -8,41 +8,53 @@
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="800"
-    x:DataType="vm:PhotoSlimmingModel"
+    x:DataType="vm:PhotoSlimmingViewModel"
     mc:Ignorable="d">
-    <!--<Grid
+    <Grid
         Margin="8"
         RowDefinitions="Auto,8,Auto,8,Auto,8,*,8,Auto">
         <TextBlock
             Text="复制或压缩照片，用于生成更小的照片集副本"
             TextWrapping="Wrap" />
-        <StackPanel
+        <Grid
             Grid.Row="2"
-            Orientation="Horizontal"
-            Spacing="8">
-            <TextBlock Text="线程数：" />
-            <NumericUpDown
-                Width="120"
-                Maximum="16"
-                Minimum="1"
-                Value="{Binding ThreadCount}" />
-
-        </StackPanel>
+            ColumnDefinitions="*,8,Auto">
+            <ListBox
+                DisplayMemberBinding="{Binding Name}"
+                ItemsSource="{Binding Configs}"
+                SelectedItem="{Binding Config}" />
+            <StackPanel
+                Grid.Column="2"
+                Orientation="Vertical"
+                Spacing="8">
+                <Button
+                    Command="{Binding CreateCommand}"
+                    Content="新增配置" />
+                <Button
+                    Command="{Binding EditCommand}"
+                    Content="修改配置"
+                    IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
+                <Button
+                    Command="{Binding RemoveCommand}"
+                    Content="删除配置"
+                    IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
+            </StackPanel>
+        </Grid>
         <StackPanel
             Grid.Row="4"
             Orientation="Horizontal"
             Spacing="8">
-            <TextBlock Text="最长容忍差异时间：" />
-            <TextBox
-                Width="120"
-                Text="{Binding }" />
-            <TextBlock Text="秒" />
-
+            <RadioButton
+                x:Name="rbtnCopy"
+                Content="复制和压缩指定文件"
+                IsChecked="True" />
+            <RadioButton Content="删除目标目录中已经不存在对应源文件的文件" />
+            <Button
+                Grid.Row="4"
+                Command="{Binding InitializeCommand}"
+                CommandParameter="{Binding #rbtnCopy.IsChecked}"
+                Content="初始化" />
         </StackPanel>
-        <Button
-            Grid.Row="4"
-            Command="{Binding InitializeCommand}"
-            Content="初始化" />
         <Grid
             Grid.Row="6"
             ColumnDefinitions="*,8,*">
@@ -60,5 +72,5 @@
             Grid.Row="8"
             Command="{Binding ExecuteCommand}"
             Content="执行" />
-    </Grid>-->
+    </Grid>
 </UserControl>

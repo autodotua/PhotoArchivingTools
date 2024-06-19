@@ -7,7 +7,7 @@ namespace PhotoArchivingTools.Views
     {
         public PhotoSlimmingPanel()
         {
-            DataContext = new PhotoSlimmingModel();
+            DataContext = new PhotoSlimmingViewModel();
             InitializeComponent();
         }
     }
