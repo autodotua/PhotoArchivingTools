@@ -19,6 +19,9 @@ namespace PhotoArchivingTools.Utilities
         private readonly Regex rCompress;
         private readonly Regex rCopy;
         private readonly Regex rWhite;
+        private int progress = 0;
+        public event EventHandler<ProgressUpdateEventArgs<int>> ProgressUpdate;
+
         public PhotoSlimmingUtility(PhotoSlimmingConfig config)
         {
             Config = config;
@@ -34,6 +37,7 @@ namespace PhotoArchivingTools.Utilities
             Copy,
             Delete
         }
+
         public SlimmingFilesInfo CompressFiles { get; private set; }
 
         public PhotoSlimmingConfig Config { get; set; }
@@ -47,6 +51,10 @@ namespace PhotoArchivingTools.Utilities
         public IReadOnlyCollection<string> ErrorMessages => errorMessages;
 
         public override Task ExecuteAsync()
+        {
+            return ExecuteAsync(CancellationToken.None);
+        }
+        public Task ExecuteAsync(CancellationToken token)
         {
             return Task.Run(() =>
             {
@@ -62,12 +70,13 @@ namespace PhotoArchivingTools.Utilities
                     Directory.CreateDirectory(Config.DistDir);
                 }
 
+                progress = 0;
 
-                Compress();
+                Compress(token);
 
-                Copy();
+                Copy(token);
 
-                Clear();
+                Clear(token);
             });
         }
 
@@ -80,8 +89,17 @@ namespace PhotoArchivingTools.Utilities
 
             return Task.Run(() =>
             {
-                foreach (var file in new DirectoryInfo(Config.SourceDir).EnumerateFiles("*", SearchOption.AllDirectories))
+                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 0, "正在搜索目录"));
+                var files = new DirectoryInfo(Config.SourceDir)
+                    .EnumerateFiles("*", SearchOption.AllDirectories)
+                    .ToList();
+                int index = 0;
+                foreach (var file in files)
                 {
+                    index++;
+                    ProgressUpdate?.Invoke(this,
+                        new ProgressUpdateEventArgs<int>(files.Count, index, $"正在查找文件 ({index}/{files.Count})"));
+
                     if (rBlack.IsMatch(file.FullName)
                         || !rWhite.IsMatch(Path.GetFileNameWithoutExtension(file.Name)))
                     {
@@ -113,6 +131,7 @@ namespace PhotoArchivingTools.Utilities
 
                 }
 
+                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 1, "正在筛选需要删除的文件"));
 
                 var desiredDistFiles = CopyFiles.SkippedFiles
                     .Select(file => GetDistPath(file.FullName, null, out _))
@@ -133,26 +152,27 @@ namespace PhotoArchivingTools.Utilities
                         }
                     }
                 }
+                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 1, "完成"));
 
             });
         }
-        private void Compress()
+        private void Compress(CancellationToken token)
         {
             if (Config.Thread != 1)
             {
-                if (Config.Thread <= 0)
-                {
-                    Parallel.ForEach(CompressFiles.ProcessingFiles, CompressSingle);
-                }
-                else
-                {
-                    Parallel.ForEach(CompressFiles.ProcessingFiles, new ParallelOptions() { MaxDegreeOfParallelism = Config.Thread }, CompressSingle);
-                }
+                Parallel.ForEach(CompressFiles.ProcessingFiles,
+                    new ParallelOptions()
+                    {
+                        MaxDegreeOfParallelism = Config.Thread <= 0 ? -1 : Config.Thread,
+                        CancellationToken = token
+                    },
+                    CompressSingle);
             }
             else
             {
                 foreach (var file in CompressFiles.ProcessingFiles)
                 {
+                    token.ThrowIfCancellationRequested();
                     CompressSingle(file);
                 }
             }
@@ -206,12 +226,20 @@ namespace PhotoArchivingTools.Utilities
             {
                 errorMessages.Add($"压缩 {Path.GetRelativePath(Config.SourceDir, file.FullName)} 失败：{ex.Message}");
             }
+            finally
+            {
+                int totalCount = CopyFiles.ProcessingFiles.Count + CompressFiles.ProcessingFiles.Count + DeleteFiles.ProcessingFiles.Count;
+                Interlocked.Increment(ref progress);
+                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(
+                    totalCount, progress, $"正在压缩 ({progress} / {totalCount})"));
+            }
         }
 
-        private void Clear()
+        private void Clear(CancellationToken token)
         {
             foreach (var file in DeleteFiles.ProcessingFiles)
             {
+                token.ThrowIfCancellationRequested();
                 try
                 {
                     File.Delete(file.FullName);
@@ -220,13 +248,21 @@ namespace PhotoArchivingTools.Utilities
                 {
                     errorMessages.Add($"删除 {Path.GetRelativePath(Config.SourceDir, file.FullName)} 失败：{ex.Message}");
                 }
+                finally
+                {
+                    int totalCount = CopyFiles.ProcessingFiles.Count + CompressFiles.ProcessingFiles.Count + DeleteFiles.ProcessingFiles.Count;
+                    Interlocked.Increment(ref progress);
+                    ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(
+                        totalCount, progress, $"正在删除 ({progress} / {totalCount})"));
+                }
             }
         }
 
-        private void Copy()
+        private void Copy(CancellationToken token)
         {
             foreach (var file in CopyFiles.ProcessingFiles)
             {
+                token.ThrowIfCancellationRequested();
                 string distPath = GetDistPath(file.FullName, null, out string subPath);
                 if (File.Exists(distPath))
                 {
@@ -241,9 +277,16 @@ namespace PhotoArchivingTools.Utilities
                 {
                     file.CopyTo(distPath);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     errorMessages.Add($"赋值 {Path.GetRelativePath(Config.SourceDir, file.FullName)} 失败：{ex.Message}");
+                }
+                finally
+                {
+                    int totalCount = CopyFiles.ProcessingFiles.Count + CompressFiles.ProcessingFiles.Count + DeleteFiles.ProcessingFiles.Count;
+                    Interlocked.Increment(ref progress);
+                    ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(
+                        totalCount, progress, $"正在复制 ({progress} / {totalCount})"));
                 }
             }
         }
@@ -301,6 +344,10 @@ namespace PhotoArchivingTools.Utilities
 
         private List<FileInfo> skippedFiles = new List<FileInfo>();
 
+        public SlimmingFilesInfo()
+        {
+
+        }
         public SlimmingFilesInfo(string rootDir)
         {
             this.rootDir = rootDir;
@@ -314,6 +361,7 @@ namespace PhotoArchivingTools.Utilities
             .ToList().AsReadOnly();
 
         public IReadOnlyList<FileInfo> SkippedFiles => skippedFiles.AsReadOnly();
+
         public void Add(FileInfo file)
         {
             processingFiles.Add(file);

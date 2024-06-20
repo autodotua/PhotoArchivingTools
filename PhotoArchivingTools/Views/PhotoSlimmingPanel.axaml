@@ -63,38 +63,82 @@
                 </Style>
             </Grid.Styles>
             <gb:GroupBox Header="待复制">
-                <ListBox ItemsSource="{Binding CopyFiles.ProcessingFilesRelativePaths}" />
+                <Grid RowDefinitions="*,8,Auto">
+                    <ListBox ItemsSource="{Binding CopyFiles.ProcessingFilesRelativePaths}" />
+                    <TextBlock Grid.Row="2">
+                        <Run Text="共" />
+                        <Run Text="{Binding CopyFiles.ProcessingFiles.Count}" />
+                        <Run Text="个文件，跳过" />
+                        <Run Text="{Binding CopyFiles.SkippedFiles.Count}" />
+                        <Run Text="个文件" />
+                    </TextBlock>
+                </Grid>
             </gb:GroupBox>
             <gb:GroupBox
                 Grid.Column="2"
                 Header="待压缩">
-                <ListBox ItemsSource="{Binding CompressFiles.ProcessingFilesRelativePaths}" />
+                <Grid RowDefinitions="*,8,Auto">
+                    <ListBox ItemsSource="{Binding CompressFiles.ProcessingFilesRelativePaths}" />
+                    <TextBlock Grid.Row="2">
+                        <Run Text="共" />
+                        <Run Text="{Binding CompressFiles.ProcessingFiles.Count}" />
+                        <Run Text="个文件，跳过" />
+                        <Run Text="{Binding CompressFiles.SkippedFiles.Count}" />
+                        <Run Text="个文件" />
+                    </TextBlock>
+                </Grid>
             </gb:GroupBox>
             <gb:GroupBox
                 Grid.Column="4"
                 Header="待删除">
-                <ListBox ItemsSource="{Binding DeleteFiles.ProcessingFilesRelativePaths}" />
+                <Grid RowDefinitions="*,8,Auto">
+                    <ListBox ItemsSource="{Binding DeleteFiles.ProcessingFilesRelativePaths}" />
+                    <TextBlock Grid.Row="2">
+                        <Run Text="共" />
+                        <Run Text="{Binding DeleteFiles.ProcessingFiles.Count}" />
+                        <Run Text="个文件，跳过" />
+                        <Run Text="{Binding DeleteFiles.SkippedFiles.Count}" />
+                        <Run Text="个文件" />
+                    </TextBlock>
+                </Grid>
             </gb:GroupBox>
             <gb:GroupBox
                 Grid.Column="6"
                 Header="错误信息">
-                <ListBox ItemsSource="{Binding ErrorMessages}" />
+                <Grid RowDefinitions="*,8,Auto">
+                    <ListBox ItemsSource="{Binding ErrorMessages}" />
+                    <TextBlock Grid.Row="2">
+                        <Run Text="共" />
+                        <Run Text="{Binding ErrorMessages.Count}" />
+                        <Run Text="条信息" />
+                    </TextBlock>
+                </Grid>
             </gb:GroupBox>
 
         </Grid>
-
-        <Button
+        <StackPanel
             Grid.Row="8"
-            Command="{Binding ExecuteCommand}"
-            Content="执行" />
+            HorizontalAlignment="Center"
+            IsEnabled="{Binding Utility, Converter={StaticResource NotNullConverter}}"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Command="{Binding ExecuteCommand}"
+                Content="执行" />
+            <Button
+                Command="{Binding CancelCommand}"
+                Content="取消"
+                IsEnabled="{Binding ExecuteCommand.CanBeCanceled}" />
+        </StackPanel>
 
-        <TextBlock
-            Grid.Row="10"
-            Text="{Binding Message}" />
         <ProgressBar
-            Grid.Row="12"
+            Grid.Row="10"
             Maximum="1"
             Minimum="0"
             Value="{Binding Progress}" />
+
+        <TextBlock
+            Grid.Row="12"
+            Text="{Binding Message}" />
     </Grid>
 </UserControl>

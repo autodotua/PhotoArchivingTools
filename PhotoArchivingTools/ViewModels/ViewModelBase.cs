@@ -23,6 +23,16 @@ public abstract partial class ViewModelBase : ObservableObject
         {
             await action();
         }
+        catch(Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
+        {
+            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
+            {
+                Type = CommonDialogMessage.CommonDialogType.Ok,
+                Title = "操作已取消",
+                Message = "操作已取消",
+                Detail = ex.ToString()
+            });
+        }
         catch (Exception ex)
         {
             WeakReferenceMessenger.Default.Send(new CommonDialogMessage()

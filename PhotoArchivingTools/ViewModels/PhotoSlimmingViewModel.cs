@@ -10,6 +10,7 @@ using PhotoArchivingTools.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
@@ -23,24 +24,34 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         };
     }
 
+    [ObservableProperty]
+    private bool canCancel;
+
+    [ObservableProperty]
     private PhotoSlimmingUtility utility;
 
     public ObservableCollection<PhotoSlimmingConfig> Configs { get; set; } = new ObservableCollection<PhotoSlimmingConfig>(AppConfig.Instance.PhotoSlimmingConfigs);
 
     [ObservableProperty]
-    private SlimmingFilesInfo compressFiles;
+    private SlimmingFilesInfo compressFiles = new SlimmingFilesInfo();
 
     [ObservableProperty]
-    private SlimmingFilesInfo copyFiles;
+    private SlimmingFilesInfo copyFiles = new SlimmingFilesInfo();
 
     [ObservableProperty]
-    private SlimmingFilesInfo deleteFiles;
+    private SlimmingFilesInfo deleteFiles = new SlimmingFilesInfo();
 
     [ObservableProperty]
     private PhotoSlimmingConfig config;
 
     [ObservableProperty]
-    private ObservableCollection<string> errorMessages;
+    private double progress;
+
+    [ObservableProperty]
+    private string message;
+
+    [ObservableProperty]
+    private ObservableCollection<string> errorMessages = new ObservableCollection<string>();
 
     [RelayCommand]
     private async Task CreateAsync()
@@ -76,30 +87,46 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     [RelayCommand]
     private async Task InitializeAsync()
     {
-        utility = new PhotoSlimmingUtility(Config);
+        Utility = new PhotoSlimmingUtility(Config);
         await TryRunAsync(async () =>
         {
-            await utility.InitializeAsync();
-            CopyFiles = utility.CopyFiles;
-            CompressFiles = utility.CompressFiles;
-            DeleteFiles = utility.DeleteFiles;
-            ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
+            await Utility.InitializeAsync();
+            Utility.ProgressUpdate += Utility_ProgressUpdate;
+            CopyFiles = Utility.CopyFiles;
+            CompressFiles = Utility.CompressFiles;
+            DeleteFiles = Utility.DeleteFiles;
+            ErrorMessages = new ObservableCollection<string>(Utility.ErrorMessages);
         }, "初始化失败");
     }
 
-    [RelayCommand]
-    private Task ExecuteAsync()
+    private void Utility_ProgressUpdate(object sender, ProgressUpdateEventArgs<int> e)
     {
-        ArgumentNullException.ThrowIfNull(utility, nameof(utility));
+        Progress = 1.0 * e.Current / e.Maximum;
+        Message = e.Message;
+    }
+
+
+
+    [RelayCommand(IncludeCancelCommand = true)]
+    private Task ExecuteAsync(CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(Utility, nameof(Utility));
         return TryRunAsync(async () =>
         {
-            await utility.ExecuteAsync();
-            ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
-            utility = null;
-            CopyFiles = null;
-            CompressFiles = null;
-            DeleteFiles = null;
+            await Utility.ExecuteAsync(token);
+            Utility.ProgressUpdate -= Utility_ProgressUpdate;
+            ErrorMessages = new ObservableCollection<string>(Utility.ErrorMessages);
+            Utility = null;
+            CopyFiles = new();
+            CompressFiles = new();
+            DeleteFiles = new();
         }, "执行失败");
 
+    }
+
+    [RelayCommand]
+    private void Cancel()
+    {
+        ExecuteCommand.Cancel();
     }
 }
