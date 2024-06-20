@@ -7,6 +7,7 @@ using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
@@ -14,32 +15,25 @@ public partial class TimeClassifyViewModel : ViewModelBase
 {
     private TimeClassifyUtility utility;
 
-    public TimeClassifyConfig Config { get; set; } =AppConfig.Instance.TimeClassifyConfig;
+    public TimeClassifyConfig Config { get; set; } = AppConfig.Instance.TimeClassifyConfig;
 
 
     [ObservableProperty]
     private List<SimpleDirViewModel> sameTimePhotosDirs;
 
-    [RelayCommand]
-    private async Task InitializeAsync()
+    protected override async Task InitializeImplAsync()
     {
         Config.Dir = GetDir();
         utility = new TimeClassifyUtility(Config);
-        await TryRunAsync(async () =>
-        {
-            await utility.InitializeAsync();
-            SameTimePhotosDirs = utility.TargetDirs;
-        }, "初始化失败");
+
+        await utility.InitializeAsync();
+        SameTimePhotosDirs = utility.TargetDirs;
     }
 
-    [RelayCommand]
-    private async Task ExecuteAsync()
+    protected override async Task ExecuteImplAsync(CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(utility);
-        await TryRunAsync(async () =>
-          {
-              await utility.ExecuteAsync();
-              SameTimePhotosDirs = null;
-          }, "执行失败");
+        await utility.ExecuteAsync();
+        SameTimePhotosDirs = null;
     }
 }

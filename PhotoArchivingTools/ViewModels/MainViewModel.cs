@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel : ObservableObject
 {
     public MainViewModel()
     {

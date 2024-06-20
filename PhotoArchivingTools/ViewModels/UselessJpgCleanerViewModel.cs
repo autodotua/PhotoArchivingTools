@@ -7,6 +7,7 @@ using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
@@ -20,27 +21,18 @@ public partial class UselessJpgCleanerViewModel : ViewModelBase
     [ObservableProperty]
     private List<SimpleFileViewModel> deletingJpgFiles;
 
-    [RelayCommand]
-    private async Task InitializeAsync()
+    protected override async Task InitializeImplAsync()
     {
         Config.Dir = GetDir();
         utility = new UselessJpgCleanerUtility(Config);
-        await TryRunAsync(async () =>
-       {
-           await utility.InitializeAsync();
-           DeletingJpgFiles = utility.DeletingJpgFiles;
-       }, "初始化失败");
+        await utility.InitializeAsync();
+        DeletingJpgFiles = utility.DeletingJpgFiles;
     }
 
-    [RelayCommand]
-    private Task ExecuteAsync()
+    protected override async Task ExecuteImplAsync(CancellationToken token)
     {
-        return TryRunAsync(async () =>
-        {
-            await utility.ExecuteAsync();
-            utility = null;
-            DeletingJpgFiles = null;
-        }, "执行失败");
-
+        await utility.ExecuteAsync();
+        utility = null;
+        DeletingJpgFiles = null;
     }
 }

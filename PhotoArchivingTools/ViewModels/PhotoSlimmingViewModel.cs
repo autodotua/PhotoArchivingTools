@@ -27,7 +27,6 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     [ObservableProperty]
     private bool canCancel;
 
-    [ObservableProperty]
     private PhotoSlimmingUtility utility;
 
     public ObservableCollection<PhotoSlimmingConfig> Configs { get; set; } = new ObservableCollection<PhotoSlimmingConfig>(AppConfig.Instance.PhotoSlimmingConfigs);
@@ -84,19 +83,20 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         Configs.Remove(Config);
     }
 
-    [RelayCommand]
-    private async Task InitializeAsync()
+    protected override async Task InitializeImplAsync()
     {
-        Utility = new PhotoSlimmingUtility(Config);
-        await TryRunAsync(async () =>
-        {
-            await Utility.InitializeAsync();
-            Utility.ProgressUpdate += Utility_ProgressUpdate;
-            CopyFiles = Utility.CopyFiles;
-            CompressFiles = Utility.CompressFiles;
-            DeleteFiles = Utility.DeleteFiles;
-            ErrorMessages = new ObservableCollection<string>(Utility.ErrorMessages);
-        }, "初始化失败");
+        utility = new PhotoSlimmingUtility(Config);
+        utility.ProgressUpdate += Utility_ProgressUpdate;
+        await utility.InitializeAsync();
+        Message = "正在生成统计信息";
+        await utility.CopyFiles.CreateRelativePathsAsync();
+        await utility.CompressFiles.CreateRelativePathsAsync();
+        await utility.DeleteFiles.CreateRelativePathsAsync();
+        CopyFiles = utility.CopyFiles;
+        CompressFiles = utility.CompressFiles;
+        DeleteFiles = utility.DeleteFiles;
+        ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
+        Message = "就绪";
     }
 
     private void Utility_ProgressUpdate(object sender, ProgressUpdateEventArgs<int> e)
@@ -105,28 +105,13 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         Message = e.Message;
     }
 
-
-
-    [RelayCommand(IncludeCancelCommand = true)]
-    private Task ExecuteAsync(CancellationToken token)
+    protected override async Task ExecuteImplAsync(CancellationToken token)
     {
-        ArgumentNullException.ThrowIfNull(Utility, nameof(Utility));
-        return TryRunAsync(async () =>
-        {
-            await Utility.ExecuteAsync(token);
-            Utility.ProgressUpdate -= Utility_ProgressUpdate;
-            ErrorMessages = new ObservableCollection<string>(Utility.ErrorMessages);
-            Utility = null;
-            CopyFiles = new();
-            CompressFiles = new();
-            DeleteFiles = new();
-        }, "执行失败");
-
-    }
-
-    [RelayCommand]
-    private void Cancel()
-    {
-        ExecuteCommand.Cancel();
+        await utility.ExecuteAsync(token);
+        utility.ProgressUpdate -= Utility_ProgressUpdate;
+        ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
+        CopyFiles = new();
+        CompressFiles = new();
+        DeleteFiles = new();
     }
 }

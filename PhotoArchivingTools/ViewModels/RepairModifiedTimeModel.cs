@@ -7,15 +7,16 @@ using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
 
 public partial class RepairModifiedTimeModel : ViewModelBase
 {
-   private RepairModifiedTimeUtility utility;
+    private RepairModifiedTimeUtility utility;
 
-    public RepairModifiedTimeConfig Config { get; set; } =AppConfig.Instance.RepairModifiedTimeConfig;
+    public RepairModifiedTimeConfig Config { get; set; } = AppConfig.Instance.RepairModifiedTimeConfig;
 
     [ObservableProperty]
     private List<string> updatingFiles;
@@ -23,30 +24,21 @@ public partial class RepairModifiedTimeModel : ViewModelBase
     [ObservableProperty]
     private List<string> errorFiles;
 
-    [RelayCommand]
-    private async Task InitializeAsync()
+    protected override async Task InitializeImplAsync()
     {
         Config.Dir = GetDir();
         utility = new RepairModifiedTimeUtility(Config);
-        await TryRunAsync(async () =>
-        {
-            await utility.InitializeAsync();
-            UpdatingFiles = utility.UpdatingFilesAndMessages;
-            ErrorFiles = utility.ErrorFilesAndMessages;
-        }, "初始化失败");
+        await utility.InitializeAsync();
+        UpdatingFiles = utility.UpdatingFilesAndMessages;
+        ErrorFiles = utility.ErrorFilesAndMessages;
     }
 
-    [RelayCommand]
-    private Task ExecuteAsync()
+    protected override async Task ExecuteImplAsync(CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(utility, nameof(utility));
-        return TryRunAsync(async () =>
-        {
-            await utility.ExecuteAsync();
-            UpdatingFiles = null;
-            ErrorFiles = utility.ErrorFilesAndMessages;
-            utility = null;
-        }, "执行失败");
-
+        await utility.ExecuteAsync();
+        UpdatingFiles = null;
+        ErrorFiles = utility.ErrorFilesAndMessages;
+        utility = null;
     }
 }

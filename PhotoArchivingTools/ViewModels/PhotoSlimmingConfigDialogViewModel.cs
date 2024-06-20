@@ -4,7 +4,7 @@ using PhotoArchivingTools.Configs;
 
 namespace PhotoArchivingTools.ViewModels;
 
-public partial class PhotoSlimmingConfigViewModel : ViewModelBase
+public partial class PhotoSlimmingConfigViewModel : ObservableObject
 {
     [ObservableProperty]
     private PhotoSlimmingConfig config = new PhotoSlimmingConfig();
