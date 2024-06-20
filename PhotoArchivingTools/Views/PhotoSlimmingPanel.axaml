@@ -12,7 +12,7 @@
     mc:Ignorable="d">
     <Grid
         Margin="8"
-        RowDefinitions="Auto,8,Auto,8,Auto,8,*,8,Auto">
+        RowDefinitions="Auto,8,Auto,8,Auto,8,*,8,Auto,8,Auto,8,Auto">
         <TextBlock
             Text="复制或压缩照片，用于生成更小的照片集副本"
             TextWrapping="Wrap" />
@@ -48,7 +48,20 @@
             IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
         <Grid
             Grid.Row="6"
-            ColumnDefinitions="*,8,*,8,*">
+            ColumnDefinitions="*,8,*,8,*,8,*">
+            <Grid.Styles>
+                <Style Selector="ListBox">
+                    <Setter Property="ItemTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <TextBlock
+                                    Text="{Binding .}"
+                                    TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Grid.Styles>
             <gb:GroupBox Header="待复制">
                 <ListBox ItemsSource="{Binding CopyFiles.ProcessingFilesRelativePaths}" />
             </gb:GroupBox>
@@ -62,11 +75,26 @@
                 Header="待删除">
                 <ListBox ItemsSource="{Binding DeleteFiles.ProcessingFilesRelativePaths}" />
             </gb:GroupBox>
+            <gb:GroupBox
+                Grid.Column="6"
+                Header="错误信息">
+                <ListBox ItemsSource="{Binding ErrorMessages}" />
+            </gb:GroupBox>
 
         </Grid>
+
         <Button
             Grid.Row="8"
             Command="{Binding ExecuteCommand}"
             Content="执行" />
+
+        <TextBlock
+            Grid.Row="10"
+            Text="{Binding Message}" />
+        <ProgressBar
+            Grid.Row="12"
+            Maximum="1"
+            Minimum="0"
+            Value="{Binding Progress}" />
     </Grid>
 </UserControl>

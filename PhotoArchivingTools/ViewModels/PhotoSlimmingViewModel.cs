@@ -39,6 +39,9 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     [ObservableProperty]
     private PhotoSlimmingConfig config;
 
+    [ObservableProperty]
+    private ObservableCollection<string> errorMessages;
+
     [RelayCommand]
     private async Task CreateAsync()
     {
@@ -80,6 +83,7 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
             CopyFiles = utility.CopyFiles;
             CompressFiles = utility.CompressFiles;
             DeleteFiles = utility.DeleteFiles;
+            ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
         }, "初始化失败");
     }
 
@@ -90,6 +94,7 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         return TryRunAsync(async () =>
         {
             await utility.ExecuteAsync();
+            ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
             utility = null;
             CopyFiles = null;
             CompressFiles = null;

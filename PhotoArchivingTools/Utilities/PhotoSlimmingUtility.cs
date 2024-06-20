@@ -15,17 +15,17 @@ namespace PhotoArchivingTools.Utilities
 {
     public class PhotoSlimmingUtility : UtilityBase
     {
-        private Regex rBlack;
-        private Regex rCompress;
-        private Regex rCopy;
-        private Regex rWhite;
+        private readonly Regex rBlack;
+        private readonly Regex rCompress;
+        private readonly Regex rCopy;
+        private readonly Regex rWhite;
         public PhotoSlimmingUtility(PhotoSlimmingConfig config)
         {
             Config = config;
-            rCopy = new Regex(@$"\.({string.Join('|', Config.CopyDirectlyExtensions)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-            rCompress = new Regex(@$"\.({string.Join('|', Config.CompressExtensions)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            rCopy = new Regex(@$"\.({string.Join('|', Config.CopyDirectlyExtensions)})$", RegexOptions.IgnoreCase);
+            rCompress = new Regex(@$"\.({string.Join('|', Config.CompressExtensions)})$", RegexOptions.IgnoreCase);
             rBlack = new Regex(Config.BlackList);
-            rWhite = new Regex(string.IsNullOrWhiteSpace(Config.WhiteList) ? ".*" : Config.WhiteList);
+            rWhite = new Regex(string.IsNullOrWhiteSpace(Config.WhiteList) ? ".*" : Config.WhiteList, RegexOptions.IgnoreCase);
         }
 
         public enum TaskType
@@ -34,11 +34,17 @@ namespace PhotoArchivingTools.Utilities
             Copy,
             Delete
         }
-        public SlimmingFilesInfo CompressFiles { get; private set; } 
-        public PhotoSlimmingConfig Config { get; set; }
-        public SlimmingFilesInfo CopyFiles { get; private set; } 
+        public SlimmingFilesInfo CompressFiles { get; private set; }
 
-        public SlimmingFilesInfo DeleteFiles { get; private set; } 
+        public PhotoSlimmingConfig Config { get; set; }
+
+        public SlimmingFilesInfo CopyFiles { get; private set; }
+
+        public SlimmingFilesInfo DeleteFiles { get; private set; }
+
+        private ConcurrentBag<string> errorMessages;
+
+        public IReadOnlyCollection<string> ErrorMessages => errorMessages;
 
         public override Task ExecuteAsync()
         {
@@ -61,10 +67,7 @@ namespace PhotoArchivingTools.Utilities
 
                 Copy();
 
-                foreach (var file in DeleteFiles.ProcessingFiles)
-                {
-                    File.Delete(file.FullName);
-                }
+                Clear();
             });
         }
 
@@ -73,6 +76,7 @@ namespace PhotoArchivingTools.Utilities
             CompressFiles = new SlimmingFilesInfo(Config.SourceDir);
             CopyFiles = new SlimmingFilesInfo(Config.SourceDir);
             DeleteFiles = new SlimmingFilesInfo(Config.SourceDir);
+            errorMessages = new ConcurrentBag<string>();
 
             return Task.Run(() =>
             {
@@ -111,19 +115,22 @@ namespace PhotoArchivingTools.Utilities
 
 
                 var desiredDistFiles = CopyFiles.SkippedFiles
-                    .Select(file => GetDistPath(file.FullName, null,  out _))
+                    .Select(file => GetDistPath(file.FullName, null, out _))
                      .Concat(CompressFiles.SkippedFiles
-                        .Select(file => GetDistPath(file.FullName, Config.OutputFormat,  out _)))
+                        .Select(file => GetDistPath(file.FullName, Config.OutputFormat, out _)))
                      .ToHashSet();
 
 
-                foreach (var file in Directory
+                if (File.Exists(Config.DistDir))
+                {
+                    foreach (var file in Directory
                     .EnumerateFiles(Config.DistDir, "*", SearchOption.AllDirectories)
                      .Where(p => !rBlack.IsMatch(p)))
-                {
-                    if (!desiredDistFiles.Contains(file))
                     {
-                        DeleteFiles.Add(new FileInfo(file));
+                        if (!desiredDistFiles.Contains(file))
+                        {
+                            DeleteFiles.Add(new FileInfo(file));
+                        }
                     }
                 }
 
@@ -153,7 +160,7 @@ namespace PhotoArchivingTools.Utilities
 
         private void CompressSingle(FileInfo file)
         {
-            string distPath = GetDistPath(file.FullName, Config.OutputFormat, out string subPath);
+            string distPath = GetDistPath(file.FullName, Config.OutputFormat, out _);
             if (File.Exists(distPath))
             {
                 File.Delete(distPath);
@@ -197,6 +204,22 @@ namespace PhotoArchivingTools.Utilities
             }
             catch (Exception ex)
             {
+                errorMessages.Add($"压缩 {Path.GetRelativePath(Config.SourceDir, file.FullName)} 失败：{ex.Message}");
+            }
+        }
+
+        private void Clear()
+        {
+            foreach (var file in DeleteFiles.ProcessingFiles)
+            {
+                try
+                {
+                    File.Delete(file.FullName);
+                }
+                catch (Exception ex)
+                {
+                    errorMessages.Add($"删除 {Path.GetRelativePath(Config.SourceDir, file.FullName)} 失败：{ex.Message}");
+                }
             }
         }
 
@@ -214,36 +237,15 @@ namespace PhotoArchivingTools.Utilities
                 {
                     Directory.CreateDirectory(dir);
                 }
-                file.CopyTo(distPath);
-            }
-        }
-
-        private DateTime? FindExifTime(string file)
-        {
-            var directories = ImageMetadataReader.ReadMetadata(file);
-            MetadataExtractor.Directory? dir = null;
-            if ((dir = directories.FirstOrDefault(p => p.Name == "Exif SubIFD")) != null)
-            {
-                if (dir.TryGetDateTime(36867, out DateTime time1))
+                try
                 {
-                    return time1;
+                    file.CopyTo(distPath);
                 }
-                if (dir.TryGetDateTime(36868, out DateTime time2))
+                catch(Exception ex)
                 {
-                    return time2;
+                    errorMessages.Add($"赋值 {Path.GetRelativePath(Config.SourceDir, file.FullName)} 失败：{ex.Message}");
                 }
             }
-            if ((dir = directories.FirstOrDefault(p => p.Name == "Exif IFD0")) != null)
-            {
-                if (dir.TryGetDateTime(306, out DateTime time))
-                {
-                    return time;
-                }
-            }
-
-
-
-            return null;
         }
 
         private string GetDistPath(string sourceFileName, string newExtension, out string subPath)
@@ -281,7 +283,7 @@ namespace PhotoArchivingTools.Utilities
             }
 
 
-            var distFile = new FileInfo(GetDistPath(file.FullName, type is TaskType.Copy ? null : Config.OutputFormat,  out _));
+            var distFile = new FileInfo(GetDistPath(file.FullName, type is TaskType.Copy ? null : Config.OutputFormat, out _));
 
             if (distFile.Exists && (type is TaskType.Compress || file.Length == distFile.Length && file.LastWriteTime == distFile.LastWriteTime))
             {
@@ -294,27 +296,24 @@ namespace PhotoArchivingTools.Utilities
     }
     public class SlimmingFilesInfo
     {
+        private List<FileInfo> processingFiles = new List<FileInfo>();
         private string rootDir;
+
+        private List<FileInfo> skippedFiles = new List<FileInfo>();
 
         public SlimmingFilesInfo(string rootDir)
         {
             this.rootDir = rootDir;
         }
-
-        private List<FileInfo> processingFiles = new List<FileInfo>();
-
-        private List<FileInfo> skippedFiles = new List<FileInfo>();
-
         public IReadOnlyList<FileInfo> ProcessingFiles => processingFiles.AsReadOnly();
 
         public long ProcessingFilesLength { get; private set; } = 0;
-
-        public IReadOnlyList<FileInfo> SkippedFiles => skippedFiles.AsReadOnly();
 
         public IReadOnlyList<string> ProcessingFilesRelativePaths => processingFiles
             .Select(p => Path.GetRelativePath(rootDir, p.FullName))
             .ToList().AsReadOnly();
 
+        public IReadOnlyList<FileInfo> SkippedFiles => skippedFiles.AsReadOnly();
         public void Add(FileInfo file)
         {
             processingFiles.Add(file);
