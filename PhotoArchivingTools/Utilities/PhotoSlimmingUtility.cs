@@ -84,7 +84,7 @@ namespace PhotoArchivingTools.Utilities
             DeleteFiles = new SlimmingFilesInfo(Config.SourceDir);
             errorMessages = new ConcurrentBag<string>();
 
-            return new TaskFactory().StartNew(() =>
+            return Task.Run(() =>
             {
                 ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 0, "正在搜索目录"));
                 var files = new DirectoryInfo(Config.SourceDir)
@@ -151,7 +151,7 @@ namespace PhotoArchivingTools.Utilities
                 }
                 ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 1, "完成"));
 
-            }, TaskCreationOptions.LongRunning);
+            });
         }
         private void Clear(CancellationToken token)
         {

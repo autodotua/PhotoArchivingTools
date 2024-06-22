@@ -3,11 +3,13 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:ct="using:PhotoArchivingTools.Controls"
+    xmlns:ctrl="using:PhotoArchivingTools.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dialog="using:FzLib.Avalonia.Dialogs"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
+    Title="编辑配置"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:PhotoSlimmingConfigViewModel"
@@ -37,10 +39,16 @@
                         <TextBox Text="{Binding Config.Name}" />
                     </ct:FormItem>
                     <ct:FormItem Label="源目录：">
-                        <TextBox Text="{Binding Config.SourceDir}" />
+                        <ctrl:FilePickerTextBox
+                            Grid.Row="2"
+                            FileNames="{Binding Config.SourceDir}"
+                            Type="OpenFolder" />
                     </ct:FormItem>
                     <ct:FormItem Label="目标目录：">
-                        <TextBox Text="{Binding Config.DistDir}" />
+                        <ctrl:FilePickerTextBox
+                            Grid.Row="2"
+                            FileNames="{Binding Config.DistDir}"
+                            Type="OpenFolder" />
                     </ct:FormItem>
 
                     <ct:FormItem Label="最深目录层级：">

@@ -17,13 +17,15 @@ public partial class TimeClassifyViewModel : ViewModelBase
 
     public TimeClassifyConfig Config { get; set; } = AppConfig.Instance.TimeClassifyConfig;
 
+    [ObservableProperty]
+    private string dir;
 
     [ObservableProperty]
     private List<SimpleDirViewModel> sameTimePhotosDirs;
 
     protected override async Task InitializeImplAsync()
     {
-        Config.Dir = GetDir();
+        Config.Dir = Dir;
         utility = new TimeClassifyUtility(Config);
 
         await utility.InitializeAsync();

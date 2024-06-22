@@ -139,6 +139,7 @@
 
         <ProgressBar
             Grid.Row="10"
+            IsIndeterminate="{Binding ProgressIndeterminate}"
             Maximum="1"
             Minimum="0"
             Value="{Binding Progress}" />

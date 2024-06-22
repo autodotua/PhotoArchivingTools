@@ -14,27 +14,31 @@ public abstract partial class ViewModelBase : ObservableObject
 {
 
     [ObservableProperty]
+    private bool canExecute = false;
+
+    [ObservableProperty]
     private bool canInitialize = true;
 
     [ObservableProperty]
     private bool canReset = false;
 
     [ObservableProperty]
-    private bool canExecute = false;
-
-    [ObservableProperty]
     private bool isEnable = true;
 
-    protected static string GetDir()
-    {
-        return WeakReferenceMessenger.Default.Send(new GetDirMessage()).Dir;
-    }
+    [ObservableProperty]
+    private string message;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ProgressIndeterminate))]
+    private double progress;
+
+    public bool ProgressIndeterminate => this.Progress < 0;
 
     protected abstract Task ExecuteImplAsync(CancellationToken token);
 
     protected abstract Task InitializeImplAsync();
 
-    private static async Task<bool> TryRunAsync(Func<Task> action, string errorTitle)
+    private async Task<bool> TryRunAsync(Func<Task> action, string errorTitle)
     {
         try
         {
@@ -61,6 +65,10 @@ public abstract partial class ViewModelBase : ObservableObject
                 Exception = ex
             });
             return false;
+        }
+        finally
+        {
+            Progress = 0;
         }
     }
 

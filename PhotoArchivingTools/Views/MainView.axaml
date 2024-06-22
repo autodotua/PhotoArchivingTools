@@ -16,48 +16,31 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <Grid
-        Margin="4"
-        RowDefinitions="Auto,8,*">
-        <Grid ColumnDefinitions="Auto,8,*,8,Auto,8,Auto,8,Auto">
-            <TextBlock
-                VerticalAlignment="Center"
-                Text="操作目录：" />
-            <TextBox
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                Text="{Binding Dir}" />
-            <Button
-                Grid.Column="4"
-                VerticalAlignment="Center"
-                Command="{Binding BrowseDirCommand}"
-                Content="浏览.." />
-        </Grid>
-        <ScrollViewer
-            Grid.Row="2"
-            HorizontalScrollBarVisibility="Disabled"
-            VerticalScrollBarVisibility="Auto">
-            <StackPanel
-                Orientation="Vertical"
-                Spacing="8">
-                <StackPanel.Styles>
-                    <Style Selector="Expander">
-                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                    </Style>
-                </StackPanel.Styles>
-                <Expander Header="相同时间段照片归档">
-                    <local:TimeClassifyPanel />
-                </Expander>
-                <Expander Header="删除存在RAW的JPG">
-                    <local:UselessJpgCleanerPanel />
-                </Expander>
-                <Expander Header="使用Exif时间更新文件修改时间">
-                    <local:RepairModifiedTimePanel />
-                </Expander>
-                <Expander Header="创建照片集合副本">
-                    <local:PhotoSlimmingPanel />
-                </Expander>
-            </StackPanel>
-        </ScrollViewer>
-    </Grid>
+
+    <ScrollViewer
+        Grid.Row="2"
+        HorizontalScrollBarVisibility="Disabled"
+        VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            Orientation="Vertical"
+            Spacing="8">
+            <StackPanel.Styles>
+                <Style Selector="Expander">
+                    <Setter Property="HorizontalAlignment" Value="Stretch" />
+                </Style>
+            </StackPanel.Styles>
+            <Expander Header="相同时间段照片归档">
+                <local:TimeClassifyPanel />
+            </Expander>
+            <Expander Header="删除存在RAW的JPG">
+                <local:UselessJpgCleanerPanel />
+            </Expander>
+            <Expander Header="使用Exif时间更新文件修改时间">
+                <local:RepairModifiedTimePanel />
+            </Expander>
+            <Expander Header="创建照片集合副本">
+                <local:PhotoSlimmingPanel />
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

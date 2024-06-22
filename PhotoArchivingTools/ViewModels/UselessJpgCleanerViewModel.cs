@@ -17,13 +17,16 @@ public partial class UselessJpgCleanerViewModel : ViewModelBase
     private UselessJpgCleanerUtility utility;
 
     public UselessJpgCleanerConfig Config { get; set; } = AppConfig.Instance.UselessJpgCleanerConfig;
+   
+    [ObservableProperty]
+    private string dir;
 
     [ObservableProperty]
     private List<SimpleFileViewModel> deletingJpgFiles;
 
     protected override async Task InitializeImplAsync()
     {
-        Config.Dir = GetDir();
+        Config.Dir = Dir;
         utility = new UselessJpgCleanerUtility(Config);
         await utility.InitializeAsync();
         DeletingJpgFiles = utility.DeletingJpgFiles;

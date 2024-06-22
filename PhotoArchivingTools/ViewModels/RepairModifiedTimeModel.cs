@@ -19,6 +19,9 @@ public partial class RepairModifiedTimeModel : ViewModelBase
     public RepairModifiedTimeConfig Config { get; set; } = AppConfig.Instance.RepairModifiedTimeConfig;
 
     [ObservableProperty]
+    private string dir;
+
+    [ObservableProperty]
     private List<string> updatingFiles;
 
     [ObservableProperty]
@@ -26,7 +29,7 @@ public partial class RepairModifiedTimeModel : ViewModelBase
 
     protected override async Task InitializeImplAsync()
     {
-        Config.Dir = GetDir();
+        Config.Dir = Dir;
         utility = new RepairModifiedTimeUtility(Config);
         await utility.InitializeAsync();
         UpdatingFiles = utility.UpdatingFilesAndMessages;
