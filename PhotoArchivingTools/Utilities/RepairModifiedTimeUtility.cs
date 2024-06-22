@@ -27,8 +27,11 @@ namespace PhotoArchivingTools.Utilities
             ErrorFilesAndMessages = new List<string>();
             return Task.Run(() =>
             {
+                int index = 0;
                 foreach (var file in fileExifTimes.Keys)
                 {
+                    index++;
+                    NotifyProgressUpdate(fileExifTimes.Count, index,$"正在处理（{index}/{fileExifTimes.Count}）：{file.FullName}");
                     try
                     {
                         file.LastWriteTime = fileExifTimes[file];

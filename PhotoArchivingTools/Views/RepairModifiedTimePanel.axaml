@@ -13,7 +13,7 @@
     mc:Ignorable="d">
     <Grid
         Margin="8"
-        RowDefinitions="Auto,8,Auto,8,Auto,8,Auto,8,Auto,8,*,8,Auto">
+        RowDefinitions="Auto,8,Auto,8,Auto,8,Auto,8,Auto,8,*,8,Auto,8,Auto,8,Auto">
         <TextBlock
             Text="寻找Exif信息中的拍摄时间与照片修改时间不同的文件，将修改时间更新闻Exif时间"
             TextWrapping="Wrap" />
@@ -69,5 +69,16 @@
             Grid.Row="12"
             Command="{Binding ExecuteCommand}"
             Content="执行" />
+
+        <ProgressBar
+            Grid.Row="14"
+            IsIndeterminate="{Binding ProgressIndeterminate}"
+            Maximum="1"
+            Minimum="0"
+            Value="{Binding Progress}" />
+
+        <TextBlock
+            Grid.Row="16"
+            Text="{Binding Message}" />
     </Grid>
 </UserControl>

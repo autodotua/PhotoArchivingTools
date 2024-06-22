@@ -30,7 +30,6 @@ namespace PhotoArchivingTools.Utilities
             rWhite = new Regex(string.IsNullOrWhiteSpace(Config.WhiteList) ? ".*" : Config.WhiteList, RegexOptions.IgnoreCase);
         }
 
-        public event EventHandler<ProgressUpdateEventArgs<int>> ProgressUpdate;
         public enum TaskType
         {
             Compress,
@@ -86,7 +85,7 @@ namespace PhotoArchivingTools.Utilities
 
             return Task.Run(() =>
             {
-                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 0, "正在搜索目录"));
+                NotifyProgressUpdate(1, 0, "正在搜索目录");
                 var files = new DirectoryInfo(Config.SourceDir)
                     .EnumerateFiles("*", SearchOption.AllDirectories)
                     .ToList();
@@ -94,8 +93,7 @@ namespace PhotoArchivingTools.Utilities
                 foreach (var file in files)
                 {
                     index++;
-                    ProgressUpdate?.Invoke(this,
-                        new ProgressUpdateEventArgs<int>(files.Count, index, $"正在查找文件 ({index}/{files.Count})"));
+                    NotifyProgressUpdate(files.Count, index, $"正在查找文件 ({index}/{files.Count})");
 
                     if (rBlack.IsMatch(file.FullName)
                         || !rWhite.IsMatch(Path.GetFileNameWithoutExtension(file.Name)))
@@ -128,7 +126,7 @@ namespace PhotoArchivingTools.Utilities
 
                 }
 
-                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 1, "正在筛选需要删除的文件"));
+                NotifyProgressUpdate(1, 1, "正在筛选需要删除的文件");
 
                 var desiredDistFiles = CopyFiles.SkippedFiles
                     .Select(file => GetDistPath(file.FullName, null, out _))
@@ -149,7 +147,7 @@ namespace PhotoArchivingTools.Utilities
                         }
                     }
                 }
-                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(1, 1, "完成"));
+                NotifyProgressUpdate(1, 1, "完成");
 
             });
         }
@@ -170,8 +168,7 @@ namespace PhotoArchivingTools.Utilities
                 {
                     int totalCount = CopyFiles.ProcessingFiles.Count + CompressFiles.ProcessingFiles.Count + DeleteFiles.ProcessingFiles.Count;
                     Interlocked.Increment(ref progress);
-                    ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(
-                        totalCount, progress, $"正在删除 ({progress} / {totalCount})"));
+                    NotifyProgressUpdate(totalCount, progress, $"正在删除 ({progress} / {totalCount})");
                 }
             }
         }
@@ -250,8 +247,7 @@ namespace PhotoArchivingTools.Utilities
             {
                 int totalCount = CopyFiles.ProcessingFiles.Count + CompressFiles.ProcessingFiles.Count + DeleteFiles.ProcessingFiles.Count;
                 Interlocked.Increment(ref progress);
-                ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(
-                    totalCount, progress, $"正在压缩 ({progress} / {totalCount})"));
+                NotifyProgressUpdate(totalCount, progress, $"正在压缩 ({progress} / {totalCount})");
             }
         }
         private void Copy(CancellationToken token)
@@ -281,8 +277,7 @@ namespace PhotoArchivingTools.Utilities
                 {
                     int totalCount = CopyFiles.ProcessingFiles.Count + CompressFiles.ProcessingFiles.Count + DeleteFiles.ProcessingFiles.Count;
                     Interlocked.Increment(ref progress);
-                    ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(
-                        totalCount, progress, $"正在复制 ({progress} / {totalCount})"));
+                    NotifyProgressUpdate(totalCount, progress, $"正在复制 ({progress} / {totalCount})");
                 }
             }
         }

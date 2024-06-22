@@ -25,7 +25,7 @@ namespace PhotoArchivingTools.Controls
         }
 
         public static readonly StyledProperty<string> FileNamesProperty =
-            AvaloniaProperty.Register<FilePickerTextBox, string>(nameof(FileNames));
+            AvaloniaProperty.Register<FilePickerTextBox, string>(nameof(FileNames), defaultBindingMode: BindingMode.TwoWay);
 
         public string FileNames
         {
@@ -34,7 +34,7 @@ namespace PhotoArchivingTools.Controls
         }
 
         public static readonly StyledProperty<object> ButtonContentProperty =
-            AvaloniaProperty.Register<FilePickerTextBox, object>(nameof(ButtonContent), "‰Ø¿¿..", defaultBindingMode: BindingMode.TwoWay);
+            AvaloniaProperty.Register<FilePickerTextBox, object>(nameof(ButtonContent), "‰Ø¿¿..");
 
         public object ButtonContent
         {

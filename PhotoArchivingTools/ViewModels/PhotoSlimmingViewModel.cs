@@ -103,9 +103,4 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         Configs.Remove(Config);
     }
 
-    private void Utility_ProgressUpdate(object sender, ProgressUpdateEventArgs<int> e)
-    {
-        Progress = 1.0 * e.Current / e.Maximum;
-        Message = e.Message;
-    }
 }

@@ -32,6 +32,7 @@ public partial class RepairModifiedTimeModel : ViewModelBase
         Config.Dir = Dir;
         utility = new RepairModifiedTimeUtility(Config);
         await utility.InitializeAsync();
+        utility.ProgressUpdate += Utility_ProgressUpdate;
         UpdatingFiles = utility.UpdatingFilesAndMessages;
         ErrorFiles = utility.ErrorFilesAndMessages;
     }
@@ -42,6 +43,8 @@ public partial class RepairModifiedTimeModel : ViewModelBase
         await utility.ExecuteAsync();
         UpdatingFiles = null;
         ErrorFiles = utility.ErrorFilesAndMessages;
+        utility.ProgressUpdate -= Utility_ProgressUpdate;
         utility = null;
+        Message = "完成";
     }
 }

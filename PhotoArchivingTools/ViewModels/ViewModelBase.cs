@@ -38,40 +38,11 @@ public abstract partial class ViewModelBase : ObservableObject
 
     protected abstract Task InitializeImplAsync();
 
-    private async Task<bool> TryRunAsync(Func<Task> action, string errorTitle)
+    protected void Utility_ProgressUpdate(object sender, ProgressUpdateEventArgs<int> e)
     {
-        try
-        {
-            await action();
-            return true;
-        }
-        catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
-        {
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Ok,
-                Title = "操作已取消",
-                Message = "操作已取消",
-                Detail = ex.ToString()
-            });
-            return false;
-        }
-        catch (Exception ex)
-        {
-            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
-            {
-                Type = CommonDialogMessage.CommonDialogType.Error,
-                Title = errorTitle,
-                Exception = ex
-            });
-            return false;
-        }
-        finally
-        {
-            Progress = 0;
-        }
+        Progress = 1.0 * e.Current / e.Maximum;
+        Message = e.Message;
     }
-
     [RelayCommand]
     private void CancelExecute()
     {
@@ -115,6 +86,7 @@ public abstract partial class ViewModelBase : ObservableObject
         ResetCommand.NotifyCanExecuteChanged();
         InitializeCommand.NotifyCanExecuteChanged();
     }
+
     [RelayCommand(CanExecute = nameof(CanReset))]
     private void Reset()
     {
@@ -125,5 +97,40 @@ public abstract partial class ViewModelBase : ObservableObject
         ResetCommand.NotifyCanExecuteChanged();
         ExecuteCommand.NotifyCanExecuteChanged();
         InitializeCommand.NotifyCanExecuteChanged();
+    }
+
+    private async Task<bool> TryRunAsync(Func<Task> action, string errorTitle)
+    {
+        Progress = -1;
+        try
+        {
+            await action();
+            return true;
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
+        {
+            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
+            {
+                Type = CommonDialogMessage.CommonDialogType.Ok,
+                Title = "操作已取消",
+                Message = "操作已取消",
+                Detail = ex.ToString()
+            });
+            return false;
+        }
+        catch (Exception ex)
+        {
+            WeakReferenceMessenger.Default.Send(new CommonDialogMessage()
+            {
+                Type = CommonDialogMessage.CommonDialogType.Error,
+                Title = errorTitle,
+                Exception = ex
+            });
+            return false;
+        }
+        finally
+        {
+            Progress = 0;
+        }
     }
 }
