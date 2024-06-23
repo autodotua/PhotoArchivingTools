@@ -15,12 +15,12 @@
     Clear-Host
 
     Write-Output "正在发布win-x64"
-    dotnet publish SoftwareCopyrightSourceCodeGenerator.Desktop -r win-x64 -c Release -o Publish/win-x64 --self-contained $c /p:PublishSingleFile=$s 
-    Move-Item Publish/win-x64/SoftwareCopyrightSourceCodeGenerator.Desktop.exe Publish/win-x64/scscg.exe
+    dotnet publish PhotoArchivingTools.Desktop -r win-x64 -c Release -o Publish/win-x64 --self-contained $c /p:PublishSingleFile=$s 
+    Move-Item Publish/win-x64/PhotoArchivingTools.Desktop.exe Publish/win-x64/PAT.exe
 
     Write-Output "正在发布linux-x64"
-    dotnet publish SoftwareCopyrightSourceCodeGenerator.Desktop -r linux-x64 -c Release -o Publish/linux-x64 --self-contained $c /p:PublishSingleFile=$s 
-    Move-Item Publish/linux-x64/SoftwareCopyrightSourceCodeGenerator.Desktop Publish/linux-x64/scscg.exe
+    dotnet publish PhotoArchivingTools.Desktop -r linux-x64 -c Release -o Publish/linux-x64 --self-contained $c /p:PublishSingleFile=$s 
+    Move-Item Publish/linux-x64/PhotoArchivingTools.Desktop Publish/linux-x64/PAT.exe
     # if ($b) {
     #     Write-Output "正在发布browser-wasm"
     #     dotnet publish MyDiary.UI/MyDiary.UI.Browser -r browser-wasm -c Release -o Publish/web --self-contained true

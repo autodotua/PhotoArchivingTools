@@ -12,14 +12,14 @@ namespace PhotoArchivingTools.Converters
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             IEnumerable<string> list = value as IEnumerable<string>;
-            return string.Join(", ", list);
+            return string.Join(", ", list) + ", ";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is string s)
             {
-                var list = s.Split(new string[] { ",", "，" }, StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim());
+                var list = s.Split(new string[] { ",", "，" }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(p => p.Trim());
 
                 if (targetType == typeof(string[]))
                 {

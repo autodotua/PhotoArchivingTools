@@ -38,4 +38,9 @@ public partial class TimeClassifyViewModel : ViewModelBase
         await utility.ExecuteAsync();
         SameTimePhotosDirs = null;
     }
+
+    protected override void ResetImpl()
+    {
+        SameTimePhotosDirs = new List<SimpleDirViewModel>();
+    }
 }

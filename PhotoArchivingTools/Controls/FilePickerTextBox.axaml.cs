@@ -90,7 +90,19 @@ namespace PhotoArchivingTools.Controls
         private async void Button_Click(object sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             var storageProvider = TopLevel.GetTopLevel(this).StorageProvider;
-
+            string suggestedStartLocation = SuggestedStartLocation;
+            if (suggestedStartLocation == null && !string.IsNullOrWhiteSpace(FileNames))
+            {
+                var file = FileNames.Split(MultipleFilesSeparator)[0];
+                if (Type is PickerType.OpenFile or PickerType.SaveFile && File.Exists(file))
+                {
+                    suggestedStartLocation = Path.GetDirectoryName(file);
+                }
+                else if (Type is PickerType.OpenFolder && Directory.Exists(file))
+                {
+                    suggestedStartLocation = file;
+                }
+            }
             switch (Type)
             {
                 case PickerType.OpenFile:
@@ -99,7 +111,7 @@ namespace PhotoArchivingTools.Controls
                         AllowMultiple = AllowMultiple,
                         FileTypeFilter = FileTypeFilter,
                         Title = Title,
-                        SuggestedStartLocation = await storageProvider.TryGetFolderFromPathAsync(SuggestedStartLocation)
+                        SuggestedStartLocation = await storageProvider.TryGetFolderFromPathAsync(suggestedStartLocation)
                     });
                     if (openFiles != null && openFiles.Count > 0)
                     {
@@ -111,7 +123,7 @@ namespace PhotoArchivingTools.Controls
                     {
                         Title = Title,
                         AllowMultiple = AllowMultiple,
-                        SuggestedStartLocation = await storageProvider.TryGetFolderFromPathAsync(SuggestedStartLocation),
+                        SuggestedStartLocation = await storageProvider.TryGetFolderFromPathAsync(suggestedStartLocation),
                     });
                     if (folders != null && folders.Count > 0)
                     {
@@ -126,7 +138,7 @@ namespace PhotoArchivingTools.Controls
                         DefaultExtension = SaveFileDefaultExtension,
                         ShowOverwritePrompt = ShowOverwritePrompt,
                         SuggestedFileName = SaveFileSuggestedFileName,
-                        SuggestedStartLocation = await storageProvider.TryGetFolderFromPathAsync(SuggestedStartLocation),
+                        SuggestedStartLocation = await storageProvider.TryGetFolderFromPathAsync(suggestedStartLocation),
                     });
                     if (saveFiles != null)
                     {

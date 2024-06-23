@@ -44,7 +44,7 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         };
     }
     public ObservableCollection<PhotoSlimmingConfig> Configs { get; set; } = new ObservableCollection<PhotoSlimmingConfig>(AppConfig.Instance.PhotoSlimmingConfigs);
-   
+
     protected override async Task ExecuteImplAsync(CancellationToken token)
     {
         await utility.ExecuteAsync(token);
@@ -70,6 +70,14 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         DeleteFiles = utility.DeleteFiles;
         ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
         Message = "就绪";
+    }
+
+    protected override void ResetImpl()
+    {
+        CopyFiles = new SlimmingFilesInfo();
+        CompressFiles = new SlimmingFilesInfo();
+        DeleteFiles = new SlimmingFilesInfo();
+        ErrorMessages = new ObservableCollection<string>();
     }
 
     [RelayCommand]

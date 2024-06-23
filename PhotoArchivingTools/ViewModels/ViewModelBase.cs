@@ -26,6 +26,9 @@ public abstract partial class ViewModelBase : ObservableObject
     private bool isEnable = true;
 
     [ObservableProperty]
+    private bool isWorking = false;
+
+    [ObservableProperty]
     private string message;
 
     [ObservableProperty]
@@ -37,6 +40,8 @@ public abstract partial class ViewModelBase : ObservableObject
     protected abstract Task ExecuteImplAsync(CancellationToken token);
 
     protected abstract Task InitializeImplAsync();
+
+    protected abstract void ResetImpl();
 
     protected void Utility_ProgressUpdate(object sender, ProgressUpdateEventArgs<int> e)
     {
@@ -97,11 +102,14 @@ public abstract partial class ViewModelBase : ObservableObject
         ResetCommand.NotifyCanExecuteChanged();
         ExecuteCommand.NotifyCanExecuteChanged();
         InitializeCommand.NotifyCanExecuteChanged();
+
+        ResetImpl();
     }
 
     private async Task<bool> TryRunAsync(Func<Task> action, string errorTitle)
     {
         Progress = -1;
+        IsWorking = true;
         try
         {
             await action();
@@ -131,6 +139,8 @@ public abstract partial class ViewModelBase : ObservableObject
         finally
         {
             Progress = 0;
+            IsWorking = false;
+            Message = "完成";
         }
     }
 }

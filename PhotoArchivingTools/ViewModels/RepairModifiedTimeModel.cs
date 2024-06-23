@@ -47,4 +47,10 @@ public partial class RepairModifiedTimeModel : ViewModelBase
         utility = null;
         Message = "完成";
     }
+
+    protected override void ResetImpl()
+    {
+        UpdatingFiles = new List<string>();
+        ErrorFiles = new List<string>();
+    }
 }

@@ -38,4 +38,9 @@ public partial class UselessJpgCleanerViewModel : ViewModelBase
         utility = null;
         DeletingJpgFiles = null;
     }
+
+    protected override void ResetImpl()
+    {
+        DeletingJpgFiles = new List<SimpleFileViewModel>();
+    }
 }

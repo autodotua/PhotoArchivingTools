@@ -85,7 +85,7 @@ namespace PhotoArchivingTools.Utilities
 
             return Task.Run(() =>
             {
-                NotifyProgressUpdate(1, 0, "正在搜索目录");
+                NotifyProgressUpdate(1, -1, "正在搜索目录");
                 var files = new DirectoryInfo(Config.SourceDir)
                     .EnumerateFiles("*", SearchOption.AllDirectories)
                     .ToList();

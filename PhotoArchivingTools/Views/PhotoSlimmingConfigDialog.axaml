@@ -31,13 +31,15 @@
         <StackPanel
             Orientation="Vertical"
             Spacing="8">
-            <gb:GroupBox Header="基本信息">
+            <ct:FormItem
+                Margin="8,0,0,0"
+                Label="配置名称：">
+                <TextBox Text="{Binding Config.Name}" />
+            </ct:FormItem>
+            <gb:GroupBox Header="目录">
                 <StackPanel
                     Orientation="Vertical"
                     Spacing="8">
-                    <ct:FormItem Label="名称：">
-                        <TextBox Text="{Binding Config.Name}" />
-                    </ct:FormItem>
                     <ct:FormItem Label="源目录：">
                         <ctrl:FilePickerTextBox
                             Grid.Row="2"
@@ -53,10 +55,9 @@
 
                     <ct:FormItem Label="最深目录层级：">
                         <NumericUpDown
-                            Grid.Row="12"
-                            Increment="10"
-                            Maximum="20000"
-                            Minimum="10"
+                            Increment="1"
+                            Maximum="10000"
+                            Minimum="0"
                             Value="{Binding Config.DeepestLevel}" />
                     </ct:FormItem>
                     <TextBlock
@@ -65,11 +66,7 @@
                         TextWrapping="Wrap" />
                     <CheckBox
                         Grid.ColumnSpan="99"
-                        Content="处理前清空目标目录"
-                        IsChecked="{Binding Config.ClearAllBeforeRunning}" />
-                    <CheckBox
-                        Grid.ColumnSpan="99"
-                        Content="遇到已经存在的文件是否跳过（而不是覆盖）"
+                        Content="跳过已经存在的文件（而不是覆盖）"
                         IsChecked="{Binding Config.SkipIfExist}" />
                 </StackPanel>
             </gb:GroupBox>
@@ -107,7 +104,6 @@
                     Spacing="8">
                     <ct:FormItem Label="最大长边像素：">
                         <NumericUpDown
-                            Grid.Row="12"
                             Increment="10"
                             Maximum="20000"
                             Minimum="10"
@@ -115,22 +111,31 @@
                     </ct:FormItem>
                     <ct:FormItem Label="最大短边像素：">
                         <NumericUpDown
-                            Grid.Row="12"
                             Increment="10"
                             Maximum="10000"
                             Minimum="10"
                             Value="{Binding Config.MaxShortSize}" />
                     </ct:FormItem>
-                    <ct:FormItem Label="{Binding Config.Quality, StringFormat='JPEG质量 ({0})：'}">
-                        <Slider
-                            Grid.Row="16"
-                            Maximum="100"
-                            Minimum="10"
-                            Value="{Binding Config.Quality}" />
-                    </ct:FormItem>
                     <ct:FormItem Label="压缩后类型：">
                         <TextBox Text="{Binding Config.OutputFormat}" />
                     </ct:FormItem>
+                    <ct:FormItem Label="JPEG质量：">
+                        <NumericUpDown
+                            FormatString="0"
+                            Increment="10"
+                            Maximum="100"
+                            Minimum="10"
+                            Value="{Binding Config.Quality}" />
+                    </ct:FormItem>    
+                  <ct:FormItem Label="处理线程数：">
+                        <NumericUpDown
+                            FormatString="0"
+                            Increment="1"
+                            Maximum="16"
+                            Minimum="1"
+                            Value="{Binding Config.Thread}" />
+                    </ct:FormItem>
+
                 </StackPanel>
             </gb:GroupBox>
 
