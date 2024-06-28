@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.Utilities
@@ -17,12 +18,16 @@ namespace PhotoArchivingTools.Utilities
         private ConcurrentDictionary<FileInfo, string> errorFiles = new ConcurrentDictionary<FileInfo, string>();
         private ConcurrentDictionary<FileInfo, DateTime> fileExifTimes;
 
-        Regex rRepairTime;
-
+        private int progress = 0;
+        private Regex rRepairTime;
         public RepairModifiedTimeConfig Config { get; set; } = config;
         public List<string> ErrorFilesAndMessages { get; private set; }
         public List<string> UpdatingFilesAndMessages { get; private set; }
         public override Task ExecuteAsync()
+        {
+            return ExecuteAsync(CancellationToken.None);
+        }
+        public Task ExecuteAsync(CancellationToken token)
         {
             ErrorFilesAndMessages = new List<string>();
             return Task.Run(() =>
@@ -30,8 +35,9 @@ namespace PhotoArchivingTools.Utilities
                 int index = 0;
                 foreach (var file in fileExifTimes.Keys)
                 {
+                    token.ThrowIfCancellationRequested();
                     index++;
-                    NotifyProgressUpdate(fileExifTimes.Count, index,$"正在处理（{index}/{fileExifTimes.Count}）：{file.FullName}");
+                    NotifyProgressUpdate(fileExifTimes.Count, index, $"正在处理（{index}/{fileExifTimes.Count}）：{file.FullName}");
                     try
                     {
                         file.LastWriteTime = fileExifTimes[file];
@@ -48,9 +54,11 @@ namespace PhotoArchivingTools.Utilities
             fileExifTimes = new ConcurrentDictionary<FileInfo, DateTime>();
             errorFiles = new ConcurrentDictionary<FileInfo, string>();
             rRepairTime = new Regex(@$"\.({string.Join('|', Extensions)})$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            List<FileInfo> files = null;
             await Task.Run(() =>
             {
-                var files = new DirectoryInfo(Config.Dir).EnumerateFiles("*", SearchOption.AllDirectories);
+                NotifyProgressUpdate(1, -1, "正在扫描文件");
+                files = new DirectoryInfo(Config.Dir).EnumerateFiles("*", SearchOption.AllDirectories).ToList();
                 if (Config.ThreadCount > 1)
                 {
                     var options = new ParallelOptions() { MaxDegreeOfParallelism = Config.ThreadCount };
@@ -67,32 +75,36 @@ namespace PhotoArchivingTools.Utilities
             UpdatingFilesAndMessages = fileExifTimes
                 .Select(p => $"{Path.GetRelativePath(Config.Dir, p.Key.FullName)}    {p.Key.LastWriteTime} => {p.Value}")
                 .ToList();
-        }
-        private void Check(FileInfo file)
-        {
-            if (rRepairTime.IsMatch(file.Name))
-            {
-                DateTime? exifTime;
-                try
-                {
-                    exifTime = FindExifTime(file.FullName);
-                }
-                catch (Exception ex)
-                {
-                    errorFiles.TryAdd(file, ex.Message);
-                    return;
-                }
 
-                if (exifTime.HasValue)
+            void Check(FileInfo file)
+            {
+                Interlocked.Increment(ref progress);
+                NotifyProgressUpdate(files.Count, progress, $"正在扫描照片日期（{progress}/{files.Count}）");
+                if (rRepairTime.IsMatch(file.Name))
                 {
-                    var fileTime = file.LastWriteTime;
-                    var duration = (exifTime.Value - fileTime).Duration();
-                    if (duration > Config.MaxDurationTolerance)
+                    DateTime? exifTime;
+                    try
                     {
-                        fileExifTimes.TryAdd(file, exifTime.Value);
+                        exifTime = FindExifTime(file.FullName);
+                    }
+                    catch (Exception ex)
+                    {
+                        errorFiles.TryAdd(file, ex.Message);
+                        return;
+                    }
+
+                    if (exifTime.HasValue)
+                    {
+                        var fileTime = file.LastWriteTime;
+                        var duration = (exifTime.Value - fileTime).Duration();
+                        if (duration > Config.MaxDurationTolerance)
+                        {
+                            fileExifTimes.TryAdd(file, exifTime.Value);
+                        }
                     }
                 }
             }
+
         }
 
         private DateTime? FindExifTime(string file)

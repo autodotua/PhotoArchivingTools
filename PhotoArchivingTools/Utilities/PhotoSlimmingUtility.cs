@@ -338,10 +338,6 @@ namespace PhotoArchivingTools.Utilities
 
         private List<FileInfo> skippedFiles = new List<FileInfo>();
 
-        public SlimmingFilesInfo()
-        {
-            processingFilesRelativePaths = new List<string>();
-        }
         public SlimmingFilesInfo(string rootDir)
         {
             this.rootDir = rootDir;

@@ -19,19 +19,19 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     private bool canCancel;
 
     [ObservableProperty]
-    private SlimmingFilesInfo compressFiles = new SlimmingFilesInfo();
+    private SlimmingFilesInfo compressFiles;
 
     [ObservableProperty]
     private PhotoSlimmingConfig config;
 
     [ObservableProperty]
-    private SlimmingFilesInfo copyFiles = new SlimmingFilesInfo();
+    private SlimmingFilesInfo copyFiles;
 
     [ObservableProperty]
-    private SlimmingFilesInfo deleteFiles = new SlimmingFilesInfo();
+    private SlimmingFilesInfo deleteFiles;
 
     [ObservableProperty]
-    private ObservableCollection<string> errorMessages = new ObservableCollection<string>();
+    private ObservableCollection<string> errorMessages;
 
     private PhotoSlimmingUtility utility;
 
@@ -49,9 +49,9 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
         await utility.ExecuteAsync(token);
         utility.ProgressUpdate -= Utility_ProgressUpdate;
         ErrorMessages = new ObservableCollection<string>(utility.ErrorMessages);
-        CopyFiles = new();
-        CompressFiles = new();
-        DeleteFiles = new();
+        CopyFiles = null;
+        CompressFiles = null;
+        DeleteFiles = null;
     }
 
     protected override async Task InitializeImplAsync()
@@ -73,10 +73,10 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
 
     protected override void ResetImpl()
     {
-        CopyFiles = new SlimmingFilesInfo();
-        CompressFiles = new SlimmingFilesInfo();
-        DeleteFiles = new SlimmingFilesInfo();
-        ErrorMessages = new ObservableCollection<string>();
+        CopyFiles = null;
+        CompressFiles = null;
+        DeleteFiles = null;
+        ErrorMessages = null;
     }
 
     [RelayCommand]

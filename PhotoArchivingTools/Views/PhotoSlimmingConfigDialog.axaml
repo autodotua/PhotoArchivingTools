@@ -16,7 +16,6 @@
     CloseButtonEnable="True"
     PrimaryButtonContent="保存"
     PrimaryButtonEnable="True"
-    Theme="{StaticResource {x:Type dialog:DialogHost}}"
     mc:Ignorable="d">
     <dialog:DialogHost.Styles>
         <Style Selector="ct|FormItem">

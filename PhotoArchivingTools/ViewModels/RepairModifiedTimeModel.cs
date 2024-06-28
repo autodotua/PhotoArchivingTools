@@ -28,10 +28,11 @@ public partial class RepairModifiedTimeModel : ViewModelBase
 
     protected override async Task InitializeImplAsync()
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(Dir);
         Config.Dir = Dir;
         utility = new RepairModifiedTimeUtility(Config);
-        await utility.InitializeAsync();
         utility.ProgressUpdate += Utility_ProgressUpdate;
+        await utility.InitializeAsync();
         UpdatingFiles = utility.UpdatingFilesAndMessages;
         ErrorFiles = utility.ErrorFilesAndMessages;
     }
@@ -39,7 +40,7 @@ public partial class RepairModifiedTimeModel : ViewModelBase
     protected override async Task ExecuteImplAsync(CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(utility, nameof(utility));
-        await utility.ExecuteAsync();
+        await utility.ExecuteAsync(token);
         UpdatingFiles = null;
         ErrorFiles = utility.ErrorFilesAndMessages;
         utility.ProgressUpdate -= Utility_ProgressUpdate;

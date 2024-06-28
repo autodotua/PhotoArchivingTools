@@ -48,27 +48,63 @@
             <TextBlock Text="秒" />
 
         </StackPanel>
-        <Button
+        <StackPanel
             Grid.Row="8"
-            Command="{Binding InitializeCommand}"
-            Content="初始化" />
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Command="{Binding InitializeCommand}"
+                Content="初始化" />
+            <Button
+                Command="{Binding ResetCommand}"
+                Content="重置" />
+        </StackPanel>
         <Grid
             Grid.Row="10"
             ColumnDefinitions="*,8,*">
             <gb:GroupBox Header="待更新文件">
-                <ListBox ItemsSource="{Binding UpdatingFiles}" />
+                <Grid RowDefinitions="*,8,Auto">
+                    <ListBox ItemsSource="{Binding UpdatingFiles}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        IsVisible="{Binding UpdatingFiles, Converter={StaticResource NotNullConverter}}">
+                        <Run Text="共" />
+                        <Run Text="{Binding UpdatingFiles.Count}" />
+                        <Run Text="个文件" />
+                    </TextBlock>
+                </Grid>
             </gb:GroupBox>
             <gb:GroupBox
                 Grid.Column="2"
                 Header="错误文件">
-                <ListBox ItemsSource="{Binding ErrorFiles}" />
+                <Grid RowDefinitions="*,8,Auto">
+                    <ListBox ItemsSource="{Binding ErrorFiles}" />
+                    <TextBlock
+                        Grid.Row="2"
+                        IsVisible="{Binding ErrorFiles, Converter={StaticResource NotNullConverter}}">
+                        <Run Text="共" />
+                        <Run Text="{Binding ErrorFiles.Count}" />
+                        <Run Text="个文件" />
+                    </TextBlock>
+                </Grid>
             </gb:GroupBox>
 
         </Grid>
-        <Button
+        <StackPanel
             Grid.Row="12"
-            Command="{Binding ExecuteCommand}"
-            Content="执行" />
+            HorizontalAlignment="Center"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                Command="{Binding ExecuteCommand}"
+                Content="执行" />
+            <Button
+                Command="{Binding CancelExecuteCommand}"
+                Content="取消"
+                IsEnabled="{Binding ExecuteCommand.CanBeCanceled}" />
+        </StackPanel>
+
 
         <ProgressBar
             Grid.Row="14"

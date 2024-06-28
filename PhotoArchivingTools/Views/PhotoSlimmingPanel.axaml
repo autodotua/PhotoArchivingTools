@@ -73,7 +73,9 @@
             <gb:GroupBox Header="待复制">
                 <Grid RowDefinitions="*,8,Auto">
                     <ListBox ItemsSource="{Binding CopyFiles.ProcessingFilesRelativePaths}" />
-                    <TextBlock Grid.Row="2">
+                    <TextBlock
+                        Grid.Row="2"
+                        IsVisible="{Binding CopyFiles, Converter={StaticResource NotNullConverter}}">
                         <Run Text="共" />
                         <Run Text="{Binding CopyFiles.ProcessingFiles.Count}" />
                         <Run Text="个文件，跳过" />
@@ -87,7 +89,9 @@
                 Header="待压缩">
                 <Grid RowDefinitions="*,8,Auto">
                     <ListBox ItemsSource="{Binding CompressFiles.ProcessingFilesRelativePaths}" />
-                    <TextBlock Grid.Row="2">
+                    <TextBlock
+                        Grid.Row="2"
+                        IsVisible="{Binding CompressFiles, Converter={StaticResource NotNullConverter}}">
                         <Run Text="共" />
                         <Run Text="{Binding CompressFiles.ProcessingFiles.Count}" />
                         <Run Text="个文件，跳过" />
@@ -101,7 +105,9 @@
                 Header="待删除">
                 <Grid RowDefinitions="*,8,Auto">
                     <ListBox ItemsSource="{Binding DeleteFiles.ProcessingFilesRelativePaths}" />
-                    <TextBlock Grid.Row="2">
+                    <TextBlock
+                        Grid.Row="2"
+                        IsVisible="{Binding DeleteFiles, Converter={StaticResource NotNullConverter}}">
                         <Run Text="共" />
                         <Run Text="{Binding DeleteFiles.ProcessingFiles.Count}" />
                         <Run Text="个文件，跳过" />
@@ -115,7 +121,9 @@
                 Header="错误信息">
                 <Grid RowDefinitions="*,8,Auto">
                     <ListBox ItemsSource="{Binding ErrorMessages}" />
-                    <TextBlock Grid.Row="2">
+                    <TextBlock
+                        Grid.Row="2"
+                        IsVisible="{Binding ErrorMessages, Converter={StaticResource NotNullConverter}}">
                         <Run Text="共" />
                         <Run Text="{Binding ErrorMessages.Count}" />
                         <Run Text="条信息" />
