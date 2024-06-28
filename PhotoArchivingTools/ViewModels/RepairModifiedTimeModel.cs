@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib.Cryptography;
 using PhotoArchivingTools.Configs;
-using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
 using System.Collections.Generic;

@@ -1,10 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FrpGUI.Avalonia.Messages;
+using FzLib.Avalonia.Messages;
 using FzLib.Cryptography;
 using PhotoArchivingTools.Configs;
-using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using PhotoArchivingTools.Views;
 using System;

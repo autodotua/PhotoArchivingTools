@@ -1,8 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using FrpGUI.Avalonia.Messages;
-using PhotoArchivingTools.Messages;
+using FzLib.Avalonia.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
 using System.Threading;

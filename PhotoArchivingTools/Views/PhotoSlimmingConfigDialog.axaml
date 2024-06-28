@@ -2,8 +2,7 @@
     x:Class="PhotoArchivingTools.Views.PhotoSlimmingConfigDialog"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ct="using:PhotoArchivingTools.Controls"
-    xmlns:ctrl="using:PhotoArchivingTools.Controls"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dialog="using:FzLib.Avalonia.Dialogs"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
@@ -17,7 +16,7 @@
     CloseButtonEnable="True"
     PrimaryButtonContent="保存"
     PrimaryButtonEnable="True"
-    Theme="{StaticResource DialogHostTheme}"
+    Theme="{StaticResource {x:Type dialog:DialogHost}}"
     mc:Ignorable="d">
     <dialog:DialogHost.Styles>
         <Style Selector="ct|FormItem">
@@ -25,7 +24,6 @@
         </Style>
     </dialog:DialogHost.Styles>
     <ScrollViewer
-        MaxHeight="300"
         HorizontalScrollBarVisibility="Disabled"
         VerticalScrollBarVisibility="Auto">
         <StackPanel
@@ -41,13 +39,13 @@
                     Orientation="Vertical"
                     Spacing="8">
                     <ct:FormItem Label="源目录：">
-                        <ctrl:FilePickerTextBox
+                        <ct:FilePickerTextBox
                             Grid.Row="2"
                             FileNames="{Binding Config.SourceDir}"
                             Type="OpenFolder" />
                     </ct:FormItem>
                     <ct:FormItem Label="目标目录：">
-                        <ctrl:FilePickerTextBox
+                        <ct:FilePickerTextBox
                             Grid.Row="2"
                             FileNames="{Binding Config.DistDir}"
                             Type="OpenFolder" />

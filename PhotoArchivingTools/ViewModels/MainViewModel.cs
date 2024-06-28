@@ -3,7 +3,6 @@ using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
-using PhotoArchivingTools.Messages;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.IO;

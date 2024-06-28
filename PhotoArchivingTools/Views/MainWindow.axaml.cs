@@ -1,6 +1,5 @@
 ﻿using Avalonia.Controls;
 using CommunityToolkit.Mvvm.Messaging;
-using PhotoArchivingTools.Messages;
 
 namespace PhotoArchivingTools.Views;
 

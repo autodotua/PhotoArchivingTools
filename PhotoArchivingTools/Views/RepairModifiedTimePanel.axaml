@@ -2,7 +2,7 @@
     x:Class="PhotoArchivingTools.Views.RepairModifiedTimePanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ctrl="using:PhotoArchivingTools.Controls"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -17,7 +17,7 @@
         <TextBlock
             Text="寻找Exif信息中的拍摄时间与照片修改时间不同的文件，将修改时间更新闻Exif时间"
             TextWrapping="Wrap" />
-        <ctrl:FilePickerTextBox
+        <ct:FilePickerTextBox
             Grid.Row="2"
             FileNames="{Binding Dir}"
             Label="目录："
@@ -44,7 +44,7 @@
                 FormatString="0"
                 Maximum="86400"
                 Minimum="1"
-                Value="{Binding Config.MaxDurationTolerance, Converter={StaticResource TimeSpanConverter}, ConverterParameter=s}" />
+                Value="{Binding Config.MaxDurationTolerance, Converter={StaticResource TimeSpanNumberConverter}, ConverterParameter=s}" />
             <TextBlock Text="秒" />
 
         </StackPanel>

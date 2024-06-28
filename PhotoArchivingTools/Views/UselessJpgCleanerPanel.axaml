@@ -2,7 +2,7 @@
     x:Class="PhotoArchivingTools.Views.UselessJpgCleanerPanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ctrl="using:PhotoArchivingTools.Controls"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
@@ -16,7 +16,7 @@
         <TextBlock
             Text="删除目录中存在同名RAW文件的JPG文件"
             TextWrapping="Wrap" />
-        <ctrl:FilePickerTextBox
+        <ct:FilePickerTextBox
             Grid.Row="2"
             FileNames="{Binding Dir}"
             Label="目录："

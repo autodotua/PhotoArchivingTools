@@ -2,7 +2,7 @@
     x:Class="PhotoArchivingTools.Views.TimeClassifyPanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ctrl="using:PhotoArchivingTools.Controls"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
@@ -16,7 +16,7 @@
         <TextBlock
             Text="识别目录中相同时间段的文件，将它们移动到相同的新目录中"
             TextWrapping="Wrap" />
-        <ctrl:FilePickerTextBox
+        <ct:FilePickerTextBox
             Grid.Row="2"
             FileNames="{Binding Dir}"
             Label="目录："
@@ -33,7 +33,7 @@
                 FormatString="0"
                 Maximum="1440"
                 Minimum="1"
-                Value="{Binding Config.MinTimeInterval, Converter={StaticResource TimeSpanConverter}, ConverterParameter=m}" />
+                Value="{Binding Config.MinTimeInterval, Converter={StaticResource TimeSpanNumberConverter}, ConverterParameter=m}" />
             <TextBlock
                 VerticalAlignment="Center"
                 Text="分钟" />

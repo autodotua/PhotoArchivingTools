@@ -23,12 +23,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceInclude Source="avares://FzLib.Avalonia/Converters/Converters.axaml" />
-                <ResourceInclude Source="avares://FzLib.Avalonia/Dialogs/DialogHostStyles.axaml" />
-                <ResourceInclude Source="avares://PhotoArchivingTools/Controls/FormItemStyle.axaml" />
+                <ResourceInclude Source="avares://FzLib.Avalonia/Resources.axaml" />
             </ResourceDictionary.MergedDictionaries>
-            <c:TimeSpanConverter x:Key="TimeSpanConverter" />
-            <c:StringListConverter x:Key="StringListConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
