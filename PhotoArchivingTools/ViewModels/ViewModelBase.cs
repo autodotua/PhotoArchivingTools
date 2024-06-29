@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib.Avalonia.Messages;
+using PhotoArchivingTools.Messages;
 using PhotoArchivingTools.Utilities;
 using System;
 using System.Threading;
@@ -51,8 +52,10 @@ public abstract partial class ViewModelBase : ObservableObject
     [RelayCommand]
     private void CancelExecute()
     {
+        WeakReferenceMessenger.Default.Send(new LoadingMessage(true));
         ExecuteCommand.Cancel();
-        Reset();
+        CanExecute = false;
+        ExecuteCommand.NotifyCanExecuteChanged();
     }
 
 
@@ -61,14 +64,7 @@ public abstract partial class ViewModelBase : ObservableObject
     {
         CanExecute = false;
 
-        if (await TryRunAsync(() => ExecuteImplAsync(token), "执行失败"))
-        {
-
-        }
-        else
-        {
-            CanExecute = true;
-        }
+        await TryRunAsync(() => ExecuteImplAsync(token), "执行失败");
     }
 
 
@@ -145,6 +141,7 @@ public abstract partial class ViewModelBase : ObservableObject
             Progress = 0;
             IsWorking = false;
             Message = "完成";
+            WeakReferenceMessenger.Default.Send(new LoadingMessage(false));
         }
     }
 }

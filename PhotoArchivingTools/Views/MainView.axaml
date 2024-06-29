@@ -16,31 +16,32 @@
         <vm:MainViewModel />
     </Design.DataContext>
 
-
-    <ScrollViewer
-        Grid.Row="2"
-        HorizontalScrollBarVisibility="Disabled"
-        VerticalScrollBarVisibility="Auto">
-        <StackPanel
-            Orientation="Vertical"
-            Spacing="8">
-            <StackPanel.Styles>
-                <Style Selector="Expander">
-                    <Setter Property="HorizontalAlignment" Value="Stretch" />
-                </Style>
-            </StackPanel.Styles>
-            <Expander Header="相同时间段照片归档">
-                <local:TimeClassifyPanel />
-            </Expander>
-            <Expander Header="删除存在RAW的JPG">
-                <local:UselessJpgCleanerPanel />
-            </Expander>
-            <Expander Header="使用EXIF时间更新文件修改时间">
-                <local:RepairModifiedTimePanel />
-            </Expander>
-            <Expander Header="创建照片集合副本">
-                <local:PhotoSlimmingPanel />
-            </Expander>
-        </StackPanel>
-    </ScrollViewer>
+    <Grid>
+        <ScrollViewer
+            Grid.Row="2"
+            HorizontalScrollBarVisibility="Disabled"
+            VerticalScrollBarVisibility="Auto">
+            <StackPanel
+                Orientation="Vertical"
+                Spacing="8">
+                <StackPanel.Styles>
+                    <Style Selector="Expander">
+                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                    </Style>
+                </StackPanel.Styles>
+                <Expander Header="相同时间段照片归档">
+                    <local:TimeClassifyPanel />
+                </Expander>
+                <Expander Header="删除存在RAW的JPG">
+                    <local:UselessJpgCleanerPanel />
+                </Expander>
+                <Expander Header="使用EXIF时间更新文件修改时间">
+                    <local:RepairModifiedTimePanel />
+                </Expander>
+                <Expander Header="创建照片集合副本">
+                    <local:PhotoSlimmingPanel />
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>

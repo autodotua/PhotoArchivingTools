@@ -122,7 +122,7 @@ namespace PhotoArchivingTools.Utilities
 
                 }
 
-                NotifyProgressUpdate(1, 1, "正在筛选需要删除的文件");
+                NotifyProgressUpdate(1, -1, "正在筛选需要删除的文件");
 
                 var desiredDistFiles = CopyFiles.SkippedFiles
                     .Select(file => GetDistPath(file.FullName, null, out _))
@@ -131,7 +131,7 @@ namespace PhotoArchivingTools.Utilities
                      .ToHashSet();
 
 
-                if (File.Exists(Config.DistDir))
+                if (Directory.Exists(Config.DistDir))
                 {
                     foreach (var file in Directory
                     .EnumerateFiles(Config.DistDir, "*", SearchOption.AllDirectories)
@@ -179,7 +179,11 @@ namespace PhotoArchivingTools.Utilities
                         MaxDegreeOfParallelism = Config.Thread <= 0 ? -1 : Config.Thread,
                         CancellationToken = token
                     },
-                    CompressSingle);
+                    file =>
+                    {
+                        token.ThrowIfCancellationRequested();
+                        CompressSingle(file);
+                    });
             }
             else
             {

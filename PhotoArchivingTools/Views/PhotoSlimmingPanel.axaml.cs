@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using PhotoArchivingTools.ViewModels;
 
 namespace PhotoArchivingTools.Views

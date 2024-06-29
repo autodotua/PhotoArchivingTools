@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using FzLib.Avalonia.Messages;
 using FzLib.Cryptography;
+using Mapster;
 using PhotoArchivingTools.Configs;
 using PhotoArchivingTools.Utilities;
 using PhotoArchivingTools.Views;
@@ -37,12 +38,17 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
 
     public PhotoSlimmingViewModel()
     {
+        Configs = new ObservableCollection<PhotoSlimmingConfig>(AppConfig.Instance.PhotoSlimmingConfigs);
+        if (Configs.Count > 0)
+        {
+            Config = Configs[0];
+        }
         (App.Current as App).Exit += (s, e) =>
         {
             AppConfig.Instance.PhotoSlimmingConfigs = new List<PhotoSlimmingConfig>(Configs);
         };
     }
-    public ObservableCollection<PhotoSlimmingConfig> Configs { get; set; } = new ObservableCollection<PhotoSlimmingConfig>(AppConfig.Instance.PhotoSlimmingConfigs);
+    public ObservableCollection<PhotoSlimmingConfig> Configs { get; set; }
 
     protected override async Task ExecuteImplAsync(CancellationToken token)
     {
@@ -112,6 +118,14 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
     private void Remove()
     {
         Configs.Remove(Config);
+    }
+
+    [RelayCommand]
+    private void Clone()
+    {
+        var newObj = Config.Adapt<PhotoSlimmingConfig>();
+        newObj.Name += "（复制）";
+        Configs.Add(newObj);
     }
 
 }

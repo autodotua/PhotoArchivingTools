@@ -16,7 +16,7 @@
             <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style Selector="ListBox">
-            <Setter Property="MinHeight" Value="120" />
+            <Setter Property="MinHeight" Value="60" />
             <Setter Property="MaxHeight" Value="360" />
         </Style>
     </Application.Styles>

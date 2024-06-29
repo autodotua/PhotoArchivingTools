@@ -20,23 +20,32 @@
                 DisplayMemberBinding="{Binding Name}"
                 ItemsSource="{Binding Configs}"
                 SelectedItem="{Binding Config}" />
-            <StackPanel
+            <Grid
                 Grid.Column="2"
+                VerticalAlignment="Center"
+                ColumnDefinitions="Auto,8,Auto"
                 IsEnabled="{Binding !IsWorking}"
-                Orientation="Vertical"
-                Spacing="8">
+                RowDefinitions="Auto,8,Auto">
                 <Button
                     Command="{Binding CreateCommand}"
-                    Content="新增配置" />
+                    Content="新增" />
                 <Button
+                    Grid.Row="2"
                     Command="{Binding EditCommand}"
-                    Content="修改配置"
+                    Content="修改"
                     IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
                 <Button
+                    Grid.Column="2"
                     Command="{Binding RemoveCommand}"
-                    Content="删除配置"
+                    Content="删除"
                     IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
-            </StackPanel>
+                <Button
+                    Grid.Row="2"
+                    Grid.Column="2"
+                    Command="{Binding CloneCommand}"
+                    Content="克隆"
+                    IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
+            </Grid>
         </Grid>
 
     </v:PanelBase.ConfigsContent>
