@@ -11,7 +11,7 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:RepairModifiedTimeModel"
-    Description="寻找Exif信息中的拍摄时间与照片修改时间不同的文件，将修改时间更新闻Exif时间"
+    Description="寻找EXIF信息中的拍摄时间与照片修改时间不同的文件，将修改时间更新闻EXIF时间"
     mc:Ignorable="d">
     <v:PanelBase.ConfigsContent>
         <StackPanel
