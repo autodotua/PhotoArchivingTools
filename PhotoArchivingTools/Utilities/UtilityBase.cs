@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.Utilities
@@ -12,7 +13,7 @@ namespace PhotoArchivingTools.Utilities
             ProgressUpdate?.Invoke(this, new ProgressUpdateEventArgs<int>(maximum, current, message));
         }
 
-        public abstract Task ExecuteAsync();
+        public abstract Task ExecuteAsync(CancellationToken token);
 
         public abstract Task InitializeAsync();
     }

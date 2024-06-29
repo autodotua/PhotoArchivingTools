@@ -46,11 +46,7 @@ namespace PhotoArchivingTools.Utilities
         public SlimmingFilesInfo DeleteFiles { get; private set; }
         public IReadOnlyCollection<string> ErrorMessages => errorMessages;
 
-        public override Task ExecuteAsync()
-        {
-            return ExecuteAsync(CancellationToken.None);
-        }
-        public Task ExecuteAsync(CancellationToken token)
+        public override Task ExecuteAsync(CancellationToken token)
         {
             return Task.Run(() =>
             {

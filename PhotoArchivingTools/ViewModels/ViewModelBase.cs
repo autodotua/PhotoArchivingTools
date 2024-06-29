@@ -47,11 +47,14 @@ public abstract partial class ViewModelBase : ObservableObject
         Progress = 1.0 * e.Current / e.Maximum;
         Message = e.Message;
     }
+
     [RelayCommand]
     private void CancelExecute()
     {
         ExecuteCommand.Cancel();
+        Reset();
     }
+
 
     [RelayCommand(IncludeCancelCommand = true, CanExecute = nameof(CanExecute))]
     private async Task ExecuteAsync(CancellationToken token)
@@ -67,6 +70,7 @@ public abstract partial class ViewModelBase : ObservableObject
             CanExecute = true;
         }
     }
+
 
     [RelayCommand(CanExecute = nameof(CanInitialize))]
     private async Task InitializeAsync()
@@ -90,6 +94,7 @@ public abstract partial class ViewModelBase : ObservableObject
         ResetCommand.NotifyCanExecuteChanged();
         InitializeCommand.NotifyCanExecuteChanged();
     }
+
 
     [RelayCommand(CanExecute = nameof(CanReset))]
     private void Reset()

@@ -1,21 +1,18 @@
-<UserControl
+<v:PanelBase
     x:Class="PhotoArchivingTools.Views.PhotoSlimmingPanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:gb="using:GroupBox.Avalonia.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:v="using:PhotoArchivingTools.Views"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:PhotoSlimmingViewModel"
+    Description="复制或压缩照片，用于生成更小的照片集副本"
     mc:Ignorable="d">
-    <Grid
-        Margin="8"
-        RowDefinitions="Auto,8,Auto,8,Auto,8,*,8,Auto,8,Auto,8,Auto">
-        <TextBlock
-            Text="复制或压缩照片，用于生成更小的照片集副本"
-            TextWrapping="Wrap" />
+    <v:PanelBase.ConfigsContent>
         <Grid
             Grid.Row="2"
             ColumnDefinitions="*,8,Auto">
@@ -41,19 +38,9 @@
                     IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}" />
             </StackPanel>
         </Grid>
-        <StackPanel
-            Grid.Row="4"
-            HorizontalAlignment="Center"
-            IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}"
-            Orientation="Horizontal"
-            Spacing="8">
-            <Button
-                Command="{Binding InitializeCommand}"
-                Content="初始化" />
-            <Button
-                Command="{Binding ResetCommand}"
-                Content="重置" />
-        </StackPanel>
+
+    </v:PanelBase.ConfigsContent>
+    <v:PanelBase.ResultsContent>
         <Grid
             Grid.Row="6"
             ColumnDefinitions="*,8,*,8,*,8,*">
@@ -132,30 +119,5 @@
             </gb:GroupBox>
 
         </Grid>
-        <StackPanel
-            Grid.Row="8"
-            HorizontalAlignment="Center"
-            IsEnabled="{Binding Config, Converter={StaticResource NotNullConverter}}"
-            Orientation="Horizontal"
-            Spacing="8">
-            <Button
-                Command="{Binding ExecuteCommand}"
-                Content="执行" />
-            <Button
-                Command="{Binding CancelExecuteCommand}"
-                Content="取消"
-                IsEnabled="{Binding ExecuteCommand.CanBeCanceled}" />
-        </StackPanel>
-
-        <ProgressBar
-            Grid.Row="10"
-            IsIndeterminate="{Binding ProgressIndeterminate}"
-            Maximum="1"
-            Minimum="0"
-            Value="{Binding Progress}" />
-
-        <TextBlock
-            Grid.Row="12"
-            Text="{Binding Message}" />
-    </Grid>
-</UserControl>
+    </v:PanelBase.ResultsContent>
+</v:PanelBase>

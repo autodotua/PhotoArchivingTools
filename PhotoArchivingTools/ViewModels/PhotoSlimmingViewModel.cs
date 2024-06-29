@@ -56,6 +56,10 @@ public partial class PhotoSlimmingViewModel : ViewModelBase
 
     protected override async Task InitializeImplAsync()
     {
+        if (Config == null)
+        {
+            throw new ArgumentException("请先选择配置");
+        }
         utility = new PhotoSlimmingUtility(Config);
         utility.ProgressUpdate += Utility_ProgressUpdate;
         await utility.InitializeAsync();

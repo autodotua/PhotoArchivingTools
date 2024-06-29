@@ -59,4 +59,8 @@
       <DependentUpon>RepairModifiedTimePanel.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\PanelBase.axaml" />
+  </ItemGroup>
 </Project>

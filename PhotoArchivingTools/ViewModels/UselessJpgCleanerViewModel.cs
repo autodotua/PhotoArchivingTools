@@ -26,19 +26,22 @@ public partial class UselessJpgCleanerViewModel : ViewModelBase
     {
         Config.Dir = Dir;
         utility = new UselessJpgCleanerUtility(Config);
+        utility.ProgressUpdate += Utility_ProgressUpdate;
         await utility.InitializeAsync();
         DeletingJpgFiles = utility.DeletingJpgFiles;
     }
 
     protected override async Task ExecuteImplAsync(CancellationToken token)
     {
-        await utility.ExecuteAsync();
+        await utility.ExecuteAsync(token);
+        utility.ProgressUpdate -= Utility_ProgressUpdate;
         utility = null;
         DeletingJpgFiles = null;
     }
 
     protected override void ResetImpl()
     {
-        DeletingJpgFiles = new List<SimpleFileViewModel>();
+        utility = null;
+        DeletingJpgFiles = null;
     }
 }

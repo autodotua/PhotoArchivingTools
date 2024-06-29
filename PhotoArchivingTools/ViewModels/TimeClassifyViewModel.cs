@@ -25,7 +25,7 @@ public partial class TimeClassifyViewModel : ViewModelBase
     {
         Config.Dir = Dir;
         utility = new TimeClassifyUtility(Config);
-
+        utility.ProgressUpdate += Utility_ProgressUpdate;
         await utility.InitializeAsync();
         SameTimePhotosDirs = utility.TargetDirs;
     }
@@ -33,12 +33,14 @@ public partial class TimeClassifyViewModel : ViewModelBase
     protected override async Task ExecuteImplAsync(CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(utility);
-        await utility.ExecuteAsync();
+        await utility.ExecuteAsync(token);
+        utility.ProgressUpdate -= Utility_ProgressUpdate;
+        utility = null;
         SameTimePhotosDirs = null;
     }
 
     protected override void ResetImpl()
     {
-        SameTimePhotosDirs = new List<SimpleDirViewModel>();
+        SameTimePhotosDirs = null;
     }
 }

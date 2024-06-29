@@ -3,7 +3,7 @@ using PhotoArchivingTools.ViewModels;
 
 namespace PhotoArchivingTools.Views
 {
-    public partial class UselessJpgCleanerPanel : UserControl
+    public partial class UselessJpgCleanerPanel : PanelBase
     {
         public UselessJpgCleanerPanel()
         {

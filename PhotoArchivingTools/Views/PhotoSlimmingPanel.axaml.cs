@@ -3,7 +3,7 @@ using PhotoArchivingTools.ViewModels;
 
 namespace PhotoArchivingTools.Views
 {
-    public partial class PhotoSlimmingPanel : UserControl
+    public partial class PhotoSlimmingPanel : PanelBase
     {
         public PhotoSlimmingPanel()
         {

@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 namespace PhotoArchivingTools.Utilities
 {
@@ -14,13 +16,17 @@ namespace PhotoArchivingTools.Utilities
         public TimeClassifyConfig Config { get; init; } = config;
         public List<SimpleDirViewModel> TargetDirs { get; set; }
 
-        public override async Task ExecuteAsync()
+        public override async Task ExecuteAsync(CancellationToken token)
         {
             ArgumentNullException.ThrowIfNull(TargetDirs, nameof(TargetDirs));
             await Task.Run(() =>
             {
+                int index = 0;
                 foreach (var dir in TargetDirs)
                 {
+                    token.ThrowIfCancellationRequested();
+                    index++;
+                    NotifyProgressUpdate(TargetDirs.Count, index, $"正在移动（{index}/{TargetDirs.Count}）");
                     string newDirName = dir.EarliestTime.ToString("yyyyMMdd-HHmmss");
                     string newDirPath = Path.Combine(Config.Dir, newDirName);
                     Directory.CreateDirectory(newDirPath);
@@ -44,7 +50,7 @@ namespace PhotoArchivingTools.Utilities
 
                     TargetDirs = null;
                 }
-            });
+            }, token);
         }
 
         public override async Task InitializeAsync()
@@ -55,6 +61,7 @@ namespace PhotoArchivingTools.Utilities
 
             await Task.Run(() =>
             {
+                NotifyProgressUpdate(0,-1, "正在搜索文件");
                 files = Directory.EnumerateFiles(Config.Dir)
                     .Select(p => new SimpleFileViewModel(p))
                     .OrderBy(p => p.Time)
@@ -69,6 +76,7 @@ namespace PhotoArchivingTools.Utilities
                     throw new Exception("目录为空");
                 }
 
+                NotifyProgressUpdate(0, -1, "正在分配目录");
                 DateTime time = DateTime.MinValue;
                 int filesIndex = 0;
                 int dirsIndex = 0;

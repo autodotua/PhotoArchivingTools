@@ -3,7 +3,7 @@ using PhotoArchivingTools.ViewModels;
 
 namespace PhotoArchivingTools.Views
 {
-    public partial class TimeClassifyPanel : UserControl
+    public partial class TimeClassifyPanel : PanelBase
     {
         public TimeClassifyPanel()
         {

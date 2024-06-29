@@ -23,11 +23,8 @@ namespace PhotoArchivingTools.Utilities
         public RepairModifiedTimeConfig Config { get; set; } = config;
         public List<string> ErrorFilesAndMessages { get; private set; }
         public List<string> UpdatingFilesAndMessages { get; private set; }
-        public override Task ExecuteAsync()
-        {
-            return ExecuteAsync(CancellationToken.None);
-        }
-        public Task ExecuteAsync(CancellationToken token)
+
+        public override Task ExecuteAsync(CancellationToken token)
         {
             ErrorFilesAndMessages = new List<string>();
             return Task.Run(() =>
