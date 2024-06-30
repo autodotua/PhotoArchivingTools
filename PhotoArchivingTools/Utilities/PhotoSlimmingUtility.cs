@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Directory = System.IO.Directory;
 using ImageMagick;
+using PhotoArchivingTools.ViewModels;
 
 namespace PhotoArchivingTools.Utilities
 {
@@ -44,6 +45,7 @@ namespace PhotoArchivingTools.Utilities
         public SlimmingFilesInfo CopyFiles { get; private set; }
 
         public SlimmingFilesInfo DeleteFiles { get; private set; }
+
         public IReadOnlyCollection<string> ErrorMessages => errorMessages;
 
         public override Task ExecuteAsync(CancellationToken token)
@@ -69,7 +71,7 @@ namespace PhotoArchivingTools.Utilities
                 Copy(token);
 
                 Clear(token);
-            });
+            }, token);
         }
 
         public override Task InitializeAsync()
@@ -122,17 +124,15 @@ namespace PhotoArchivingTools.Utilities
 
                 }
 
-                NotifyProgressUpdate(1, -1, "正在筛选需要删除的文件");
-
-                var desiredDistFiles = CopyFiles.SkippedFiles
+                if (Directory.Exists(Config.DistDir))
+                {
+                    NotifyProgressUpdate(1, -1, "正在筛选需要删除的文件");
+                    var desiredDistFiles = CopyFiles.SkippedFiles
                     .Select(file => GetDistPath(file.FullName, null, out _))
                      .Concat(CompressFiles.SkippedFiles
                         .Select(file => GetDistPath(file.FullName, Config.OutputFormat, out _)))
                      .ToHashSet();
 
-
-                if (Directory.Exists(Config.DistDir))
-                {
                     foreach (var file in Directory
                     .EnumerateFiles(Config.DistDir, "*", SearchOption.AllDirectories)
                      .Where(p => !rBlack.IsMatch(p)))
@@ -142,11 +142,19 @@ namespace PhotoArchivingTools.Utilities
                             DeleteFiles.Add(new FileInfo(file));
                         }
                     }
-                }
-                NotifyProgressUpdate(1, 1, "完成");
 
+                    NotifyProgressUpdate(0, -1, $"正在搜索空目录");
+                    foreach (var dir in Directory.EnumerateDirectories(Config.DistDir, "*", SearchOption.AllDirectories))
+                    {
+                        if (!Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Any())
+                        {
+                            DeleteFiles.Add(new FileInfo(dir));
+                        }
+                    }
+                }
             });
         }
+
         private void Clear(CancellationToken token)
         {
             foreach (var file in DeleteFiles.ProcessingFiles)
@@ -154,7 +162,14 @@ namespace PhotoArchivingTools.Utilities
                 token.ThrowIfCancellationRequested();
                 try
                 {
-                    File.Delete(file.FullName);
+                    if (file.Exists)
+                    {
+                        File.Delete(file.FullName);
+                    }
+                    else if(Directory.Exists(file.FullName))
+                    {
+                        Directory.Delete(file.FullName, true);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -167,6 +182,7 @@ namespace PhotoArchivingTools.Utilities
                     NotifyProgressUpdate(totalCount, progress, $"正在删除 ({progress} / {totalCount})");
                 }
             }
+
         }
 
         private void Compress(CancellationToken token)
@@ -250,6 +266,7 @@ namespace PhotoArchivingTools.Utilities
                 NotifyProgressUpdate(totalCount, progress, $"正在压缩 ({progress} / {totalCount})");
             }
         }
+
         private void Copy(CancellationToken token)
         {
             foreach (var file in CopyFiles.ProcessingFiles)
@@ -326,56 +343,6 @@ namespace PhotoArchivingTools.Utilities
 
             return true;
 
-        }
-    }
-    public class SlimmingFilesInfo
-    {
-        private List<FileInfo> processingFiles = new List<FileInfo>();
-
-        private IList<string> processingFilesRelativePaths;
-
-        private string rootDir;
-
-        private List<FileInfo> skippedFiles = new List<FileInfo>();
-
-        public SlimmingFilesInfo(string rootDir)
-        {
-            this.rootDir = rootDir;
-        }
-        public IReadOnlyList<FileInfo> ProcessingFiles => processingFiles.AsReadOnly();
-
-        public long ProcessingFilesLength { get; private set; } = 0;
-
-        public IList<string> ProcessingFilesRelativePaths => processingFilesRelativePaths ?? throw new Exception($"还未调用{nameof(CreateRelativePathsAsync)}方法");
-
-        public IReadOnlyList<FileInfo> SkippedFiles => skippedFiles.AsReadOnly();
-
-        public void Add(FileInfo file)
-        {
-            processingFiles.Add(file);
-            ProcessingFilesLength += file.Length;
-        }
-
-        public void AddSkipped(FileInfo file)
-        {
-            skippedFiles.Add(file);
-        }
-
-        public void Clear()
-        {
-            processingFiles = null;
-            skippedFiles = null;
-            ProcessingFilesLength = 0;
-        }
-
-        public Task CreateRelativePathsAsync()
-        {
-            return Task.Run(() =>
-            {
-                processingFilesRelativePaths = processingFiles
-                .Select(p => Path.GetRelativePath(rootDir, p.FullName))
-               .ToList();
-            });
         }
     }
 }
