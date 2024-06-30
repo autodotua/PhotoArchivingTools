@@ -1,12 +1,28 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:PhotoArchivingTools.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:views="clr-namespace:PhotoArchivingTools.Views"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="PhotoArchivingTools.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="PhotoArchivingTools">
-        <views:MainView />
+<Window
+    x:Class="PhotoArchivingTools.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:c="using:Avalonia.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="clr-namespace:PhotoArchivingTools.Views"
+    xmlns:vm="using:PhotoArchivingTools.ViewModels"
+    Title="照片归档工具"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    Icon="/Assets/icon_light.ico"
+    mc:Ignorable="d">
+    <!--<Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <WindowIcon x:Key="Icon">/Assets/icon_light.ico</WindowIcon>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <WindowIcon x:Key="Icon">/Assets/icon_dark.ico</WindowIcon>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>-->
+    <views:MainView />
 </Window>

@@ -47,8 +47,6 @@ namespace PhotoArchivingTools.Utilities
                             throw new NotImplementedException();
                         }
                     }
-
-                    TargetDirs = null;
                 }
             }, token);
         }
