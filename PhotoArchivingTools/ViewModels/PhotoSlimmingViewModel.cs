@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.ViewModels;
-public partial class ViewModel : ViewModelBase
+public partial class PhotoSlimmingViewModel : ViewModelBase
 {
     [ObservableProperty]
     private bool canCancel;
