@@ -31,23 +31,35 @@ namespace PhotoArchivingTools.Utilities
 
         public override async Task InitializeAsync()
         {
-            List<SimpleFileViewModel> files = null;
-            List<SimpleDirViewModel> subDirs = null;
-            List<SimpleDirViewModel> targetDirs = new List<SimpleDirViewModel>();
+            List<EncryptorFileViewModel> files = new List<EncryptorFileViewModel>();
 
             await Task.Run(() =>
             {
-                var files = Directory.EnumerateFiles(GetSourceDir(), "*", SearchOption.AllDirectories)
-                    .Select(p => new EncryptorFileViewModel(p))
-                    .ToList();
+                var sourceDir = GetSourceDir();
+                var isEncrypting = IsEncrypting();
 
+                foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
+                {
+                    var isEncrypted = IsEncryptedFile(file);
+
+                    if (isEncrypting && !isEncrypted || !isEncrypting && isEncrypted)
+                    {
+                        files.Add(new EncryptorFileViewModel(file)
+                        {
+                            IsFileNameEncrypted = isEncrypted && IsNameEncrypted(Path.GetFileName(file)),
+                            IsEncrypted = isEncrypting
+                        });
+                    }
+                }
             });
+
+            ProcessingFiles = files;
         }
 
         private bool IsEncrypting()
         {
             ArgumentNullException.ThrowIfNull(Config);
-            return Config is EncryptConfig;
+            return Config.Type == EncryptorConfig.EncryptorTaskType.Encrypt;
         }
 
         private string GetSourceDir()
@@ -68,56 +80,56 @@ namespace PhotoArchivingTools.Utilities
             return Config.RawDir;
         }
 
+        private static bool IsEncryptedFile(string fileName)
+        {
+            if (fileName.EndsWith(EncryptedFileExtension, StringComparison.InvariantCultureIgnoreCase))
+            {
+                return true;
+            }
+            return false;
+        }
         private static bool IsNameEncrypted(string fileName)
         {
             ArgumentException.ThrowIfNullOrEmpty(fileName);
-            if (!fileName.EndsWith(EncryptedFileExtension, StringComparison.InvariantCultureIgnoreCase))
+            if (!IsEncryptedFile(fileName))
             {
-                return false;
+                throw new ArgumentException("文件未被加密");
             }
             string base64 = FileNameSafeStringToBase64(Path.GetFileNameWithoutExtension(fileName));
             Span<byte> buffer = new Span<byte>(new byte[base64.Length]);
             return Convert.TryFromBase64String(base64, buffer, out _);
         }
-        private async Task<string> EncryptFileNameAsync(string fileName)
+
+        private string EncryptFileName(string fileName)
         {
             ArgumentException.ThrowIfNullOrEmpty(fileName);
 
-            if (fileName.EndsWith(EncryptedFileExtension, StringComparison.InvariantCultureIgnoreCase))
+            if (IsEncryptedFile(fileName))
             {
-                return fileName;
+                throw new ArgumentException("文件已被加密");
             }
 
-            string encryptedName = null;
-            await Task.Run(() =>
-            {
-                byte[] bytes = Encoding.Default.GetBytes(fileName);
-                Aes aes = GetAes();
-                bytes = aes.Encrypt(bytes);
-                string base64 = Convert.ToBase64String(bytes);
-                string safeFileName = Base64ToFileNameSafeString(base64);
-                encryptedName = $"{safeFileName}{EncryptedFileExtension}";
-            });
-            return encryptedName;
+            byte[] bytes = Encoding.Default.GetBytes(fileName);
+            Aes aes = GetAes();
+            bytes = aes.Encrypt(bytes);
+            string base64 = Convert.ToBase64String(bytes);
+            string safeFileName = Base64ToFileNameSafeString(base64);
+            return $"{safeFileName}{EncryptedFileExtension}";
         }
 
-        private async Task<string> DecryptFileNameAsync(string fileName)
+        private string DecryptFileName(string fileName)
         {
             ArgumentException.ThrowIfNullOrEmpty(fileName);
             if (!fileName.EndsWith(EncryptedFileExtension, StringComparison.InvariantCultureIgnoreCase))
             {
                 return fileName;
             }
-            string newName = null;
-            await Task.Run(() =>
-            {
-                string base64 = FileNameSafeStringToBase64(Path.GetFileNameWithoutExtension(fileName));
-                var bytes = Convert.FromBase64String(base64);
-                Aes aes = GetAes();
-                bytes = aes.Decrypt(bytes);
-                newName = Encoding.Default.GetString(bytes);
-            });
-            return newName;
+
+            string base64 = FileNameSafeStringToBase64(Path.GetFileNameWithoutExtension(fileName));
+            var bytes = Convert.FromBase64String(base64);
+            Aes aes = GetAes();
+            bytes = aes.Decrypt(bytes);
+            return Encoding.Default.GetString(bytes);
         }
 
         private Aes GetAes()

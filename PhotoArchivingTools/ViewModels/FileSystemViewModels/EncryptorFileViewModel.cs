@@ -5,10 +5,10 @@ namespace PhotoArchivingTools.ViewModels
     public partial class EncryptorFileViewModel : SimpleFileViewModel
     {
         [ObservableProperty]
-        public bool isEncrypted;
+        private bool isEncrypted;
 
         [ObservableProperty]
-        public bool isFileNameEncrypted;
+        private bool isFileNameEncrypted;
 
         public EncryptorFileViewModel(string path) : base(path)
         {

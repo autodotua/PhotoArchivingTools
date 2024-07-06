@@ -6,6 +6,6 @@ namespace PhotoArchivingTools.ViewModels
     public partial class EncryptorDirViewModel : SimpleDirViewModel
     {
         [ObservableProperty]
-        public bool isDirNameEncrypted;
+        private bool isDirNameEncrypted;
     }
 }

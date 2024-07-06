@@ -42,6 +42,9 @@
                 <Expander Header="创建照片集合副本">
                     <local:PhotoSlimmingPanel />
                 </Expander>
+                <Expander Header="文件加密">
+                    <local:EncryptorPanel />
+                </Expander>
             </StackPanel>
         </ScrollViewer>
     </Grid>

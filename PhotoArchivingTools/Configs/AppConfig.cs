@@ -46,10 +46,11 @@ namespace PhotoArchivingTools.Configs
                 return instance;
             }
         }
-        public List<PhotoSlimmingConfig> PhotoSlimmingConfigs { get; set; }=new List<PhotoSlimmingConfig>() { new PhotoSlimmingConfig() };
+        public List<PhotoSlimmingConfig> PhotoSlimmingConfigs { get; set; } = new List<PhotoSlimmingConfig>() { new PhotoSlimmingConfig() };
         public RepairModifiedTimeConfig RepairModifiedTimeConfig { get; set; } = new RepairModifiedTimeConfig();
         public TimeClassifyConfig TimeClassifyConfig { get; set; } = new TimeClassifyConfig();
         public UselessJpgCleanerConfig UselessJpgCleanerConfig { get; set; } = new UselessJpgCleanerConfig();
+        public EncryptorConfig EncryptorConfig { get; set; } = new EncryptorConfig();
 
         public void Save()
         {
@@ -60,7 +61,7 @@ namespace PhotoArchivingTools.Configs
             }
             catch (Exception ex)
             {
-             
+
             }
         }
     }

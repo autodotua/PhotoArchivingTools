@@ -1,0 +1,36 @@
+<v:PanelBase
+    x:Class="PhotoArchivingTools.Views.EncryptorPanel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ct="using:FzLib.Avalonia.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:v="using:PhotoArchivingTools.Views"
+    xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    x:DataType="vm:EncryptorViewModel"
+    Description="使用AES加密方法，对文件进行加密或解密"
+    mc:Ignorable="d">
+    <v:PanelBase.ConfigsContent>
+        <StackPanel
+            Orientation="Vertical"
+            Spacing="8">
+            <ct:FilePickerTextBox
+                FileNames="{Binding Config.RawDir}"
+                Label="原始目录："
+                Type="OpenFolder" />  
+            <ct:FilePickerTextBox
+                FileNames="{Binding Config.EncryptedDir}"
+                Label="加密目录："
+                Type="OpenFolder" />
+
+        </StackPanel>
+    </v:PanelBase.ConfigsContent>
+    <v:PanelBase.ResultsContent>
+        <ListBox
+            DisplayMemberBinding="{Binding Name}"
+            ItemsSource="{Binding ProcessingFiles}" />
+
+    </v:PanelBase.ResultsContent>
+</v:PanelBase>
