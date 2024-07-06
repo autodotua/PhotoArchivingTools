@@ -1,13 +1,14 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 
 namespace PhotoArchivingTools.ViewModels
 {
-    public class SimpleFileOrDirViewModel
+    public partial class SimpleFileOrDirViewModel : ObservableObject
     {
         public SimpleFileOrDirViewModel()
         {
         }
-        
+
         public SimpleFileOrDirViewModel(string path)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(path);
@@ -15,7 +16,10 @@ namespace PhotoArchivingTools.ViewModels
             Path = path;
         }
 
-        public string Name { get; set; }
-        public string Path { get; set; }
+        [ObservableProperty]
+        private string name;
+
+        [ObservableProperty]
+        private string path;
     }
 }

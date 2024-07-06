@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace PhotoArchivingTools.ViewModels
+namespace PhotoArchivingTools.ViewModels.FileSystemViewModels
 {
-    public class SimpleDirViewModel : SimpleFileOrDirViewModel
+    public partial class SimpleDirViewModel : SimpleFileOrDirViewModel
     {
         public SimpleDirViewModel()
         {
@@ -28,9 +29,17 @@ namespace PhotoArchivingTools.ViewModels
                     .Max());
             }
         }
-        public int FilesCount { get; set; }
-        public DateTime EarliestTime { get; set; }
-        public DateTime LatestTime { get; set; }
-        public List<SimpleFileOrDirViewModel> Subs { get; set; } = new List<SimpleFileOrDirViewModel>();
+
+        [ObservableProperty]
+        private int filesCount;
+
+        [ObservableProperty]
+        private DateTime earliestTime;
+
+        [ObservableProperty]
+        private DateTime latestTime;
+
+        [ObservableProperty]
+        private List<SimpleFileOrDirViewModel> subs  = new List<SimpleFileOrDirViewModel>();
     }
 }

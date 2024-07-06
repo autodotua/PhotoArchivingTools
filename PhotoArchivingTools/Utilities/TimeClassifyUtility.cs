@@ -1,5 +1,6 @@
 ﻿using PhotoArchivingTools.Configs;
 using PhotoArchivingTools.ViewModels;
+using PhotoArchivingTools.ViewModels.FileSystemViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

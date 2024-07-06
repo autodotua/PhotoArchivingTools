@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using PhotoArchivingTools.Configs;
 using PhotoArchivingTools.Utilities;
+using PhotoArchivingTools.ViewModels.FileSystemViewModels;
 using System;
 using System.Collections.Generic;
 using System.Threading;
