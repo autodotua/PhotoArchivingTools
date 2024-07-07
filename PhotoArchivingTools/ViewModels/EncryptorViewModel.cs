@@ -6,6 +6,7 @@ using PhotoArchivingTools.Utilities;
 using PhotoArchivingTools.ViewModels.FileSystemViewModels;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,6 +21,11 @@ public partial class EncryptorViewModel : ViewModelBase
 
     [ObservableProperty]
     private List<EncryptorFileViewModel> processingFiles;
+
+    public CipherMode[] CipherModes => Enum.GetValues<CipherMode>();
+
+    public PaddingMode[] PaddingModes => Enum.GetValues<PaddingMode>();
+
 
     private EncryptorUtility utility;
 

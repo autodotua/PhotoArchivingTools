@@ -2,9 +2,11 @@
     x:Class="PhotoArchivingTools.Views.EncryptorPanel"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:cr="clr-namespace:System.Security.Cryptography;assembly=mscorlib"
     xmlns:ct="using:FzLib.Avalonia.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:me="using:FzLib.Avalonia.MarkupExtensions"
     xmlns:v="using:PhotoArchivingTools.Views"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
     d:DesignHeight="450"
@@ -44,9 +46,27 @@
             </ct:FormItem>
 
             <ct:FormItem Label="选项：">
-                <StackPanel
-                    Orientation="Horizontal"
-                    Spacing="8">
+
+                <WrapPanel>
+                    <WrapPanel.Styles>
+                        <Style Selector="ct|FormItem">
+                            <Setter Property="LabelWidth" Value="NaN" />
+                            <Setter Property="Margin" Value="0,0,8,0" />
+                        </Style>
+                        <Style Selector="CheckBox">
+                            <Setter Property="Margin" Value="0,0,8,0" />
+                        </Style>
+                    </WrapPanel.Styles>
+                    <ct:FormItem Label="填充模式：">
+                        <ComboBox
+                            ItemsSource="{Binding PaddingModes}"
+                            SelectedItem="{Binding Config.PaddingMode}" />
+                    </ct:FormItem>
+                    <ct:FormItem Label="加密算法：">
+                        <ComboBox
+                            ItemsSource="{Binding CipherModes}"
+                            SelectedItem="{Binding Config.CipherMode}" />
+                    </ct:FormItem>
                     <CheckBox
                         Content="加密文件名"
                         IsChecked="{Binding Config.EncryptFileNames}" />
@@ -59,7 +79,7 @@
                     <CheckBox
                         Content="覆盖已存在文件"
                         IsChecked="{Binding Config.OverwriteExistedFiles}" />
-                </StackPanel>
+                </WrapPanel>
             </ct:FormItem>
 
 
