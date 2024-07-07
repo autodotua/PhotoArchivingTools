@@ -29,6 +29,8 @@ namespace PhotoArchivingTools.Configs
 
         public string RawDir { get; set; }
 
-        public EncryptorTaskType Type { get; set; }=EncryptorTaskType.Encrypt;
+        public bool RememberPassword { get; set; }
+
+        public EncryptorTaskType Type { get; set; } = EncryptorTaskType.Encrypt;
     }
 }

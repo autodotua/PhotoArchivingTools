@@ -16,7 +16,8 @@
             TextWrapping="Wrap" />
         <ContentControl
             Grid.Row="2"
-            Content="{Binding ElementName=root, Path=ConfigsContent}" />
+            Content="{Binding ElementName=root, Path=ConfigsContent}"
+            IsEnabled="{Binding CanInitialize}" />
         <StackPanel
             Grid.Row="4"
             HorizontalAlignment="Center"

@@ -21,16 +21,13 @@ public partial class EncryptorViewModel : ViewModelBase
     [ObservableProperty]
     private List<EncryptorFileViewModel> processingFiles;
 
-    [ObservableProperty]
-    private bool rememberPassword;
-
     private EncryptorUtility utility;
 
     public EncryptorViewModel()
     {
         (App.Current as App).Exit += (s, e) =>
         {
-            if (!RememberPassword)
+            if (!Config.RememberPassword)
             {
                 Config.Password = null;
             }
@@ -40,10 +37,6 @@ public partial class EncryptorViewModel : ViewModelBase
     public EncryptorConfig Config { get; set; } = AppConfig.Instance.EncryptorConfig;
     protected override async Task ExecuteImplAsync(CancellationToken token)
     {
-        if (string.IsNullOrEmpty(Config.Password))
-        {
-            throw new ArgumentException("密码为空");
-        }
         ArgumentNullException.ThrowIfNull(utility);
         await utility.ExecuteAsync(token);
         utility.ProgressUpdate -= Utility_ProgressUpdate;
@@ -52,6 +45,11 @@ public partial class EncryptorViewModel : ViewModelBase
 
     protected override async Task InitializeImplAsync()
     {
+        if (string.IsNullOrEmpty(Config.Password))
+        {
+            throw new ArgumentException("密码为空");
+        }
+        Config.Type = IsEncrypting ? EncryptorConfig.EncryptorTaskType.Encrypt : EncryptorConfig.EncryptorTaskType.Decrypt;
         utility = new EncryptorUtility(Config);
         utility.ProgressUpdate += Utility_ProgressUpdate;
         await utility.InitializeAsync();

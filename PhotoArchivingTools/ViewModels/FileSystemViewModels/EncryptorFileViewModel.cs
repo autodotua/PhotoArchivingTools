@@ -14,6 +14,16 @@ namespace PhotoArchivingTools.ViewModels
         [ObservableProperty]
         private Exception error;
 
+        [ObservableProperty]
+        private string relativePath;
+
+        [ObservableProperty]
+        private string targetName;
+
+        [ObservableProperty]
+        private string targetRelativePath;
+
+
         public EncryptorFileViewModel(string path) : base(path)
         {
         }

@@ -42,6 +42,17 @@ namespace PhotoArchivingTools.Utilities
                                 aes.EncryptFile(file.Path, encryptedFilePath, overwriteExistedFile: Config.OverwriteExistedFiles);
                                 file.IsEncrypted = true;
                                 file.IsFileNameEncrypted = Config.EncryptFileNames;
+                                file.TargetName = targetName;
+                                file.TargetRelativePath=Path.GetRelativePath(Config.EncryptedDir,encryptedFilePath);
+                                File.SetLastWriteTime(encryptedFilePath, File.GetLastWriteTime(file.Path));
+                                if (Config.DeleteSourceFiles)
+                                {
+                                    if (File.GetAttributes(file.Path).HasFlag(FileAttributes.ReadOnly))
+                                    {
+                                        File.SetAttributes(file.Path, FileAttributes.Normal);
+                                    }
+                                    File.Delete(file.Path);
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -59,6 +70,17 @@ namespace PhotoArchivingTools.Utilities
                                 aes.DecryptFile(file.Path, rawFilePath, overwriteExistedFile: Config.OverwriteExistedFiles);
                                 file.IsEncrypted = false;
                                 file.IsFileNameEncrypted = false;
+                                file.TargetName = rawName;
+                                file.TargetRelativePath = Path.GetRelativePath(Config.RawDir, rawFilePath);
+                                File.SetLastWriteTime(rawFilePath, File.GetLastWriteTime(file.Path));
+                                if (Config.DeleteSourceFiles)
+                                {
+                                    if (File.GetAttributes(file.Path).HasFlag(FileAttributes.ReadOnly))
+                                    {
+                                        File.SetAttributes(file.Path, FileAttributes.Normal);
+                                    }
+                                    File.Delete(file.Path);
+                                }
                             }
                             catch(Exception ex)
                             {
@@ -85,7 +107,8 @@ namespace PhotoArchivingTools.Utilities
                     files.Add(new EncryptorFileViewModel(file)
                     {
                         IsFileNameEncrypted = isEncrypted && IsNameEncrypted(Path.GetFileName(file)),
-                        IsEncrypted = isEncrypted
+                        IsEncrypted = isEncrypted,
+                        RelativePath = Path.GetRelativePath(sourceDir, file)
                     });
                 }
             });

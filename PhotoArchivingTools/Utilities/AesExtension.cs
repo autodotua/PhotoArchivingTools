@@ -124,12 +124,16 @@ namespace PhotoArchivingTools.Utilities
             }
         }
 
-        private static void CheckFileAndDirectoryExist(string path, bool coverExistedFiles)
+        private static void CheckFileAndDirectoryExist(string path, bool overwriteExistedFiles)
         {
             if (File.Exists(path))
             {
-                if (coverExistedFiles)
+                if (overwriteExistedFiles)
                 {
+                    if (File.GetAttributes(path).HasFlag(FileAttributes.ReadOnly))
+                    {
+                        File.SetAttributes(path, FileAttributes.Normal);
+                    }
                     File.Delete(path);
                 }
                 else
