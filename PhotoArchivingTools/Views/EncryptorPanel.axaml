@@ -12,25 +12,90 @@
     x:DataType="vm:EncryptorViewModel"
     Description="使用AES加密方法，对文件进行加密或解密"
     mc:Ignorable="d">
+    <v:PanelBase.Styles>
+        <Style Selector="ct|FormItem">
+            <Setter Property="LabelWidth" Value="72" />
+        </Style>
+    </v:PanelBase.Styles>
     <v:PanelBase.ConfigsContent>
         <StackPanel
             Orientation="Vertical"
             Spacing="8">
-            <ct:FilePickerTextBox
-                FileNames="{Binding Config.RawDir}"
-                Label="原始目录："
-                Type="OpenFolder" />  
-            <ct:FilePickerTextBox
-                FileNames="{Binding Config.EncryptedDir}"
-                Label="加密目录："
-                Type="OpenFolder" />
+            <ct:FormItem Label="原始目录：">
+                <ct:FilePickerTextBox
+                    FileNames="{Binding Config.RawDir}"
+                    Type="OpenFolder" />
+            </ct:FormItem>
+            <ct:FormItem Label="加密目录：">
+                <ct:FilePickerTextBox
+                    FileNames="{Binding Config.EncryptedDir}"
+                    Type="OpenFolder" />
+            </ct:FormItem>
+            <ct:FormItem Label="密码：">
+                <Grid ColumnDefinitions="*,8,Auto">
+                    <TextBox
+                        PasswordChar="*"
+                        Text="{Binding Config.Password}" />
+                    <CheckBox
+                        Grid.Column="2"
+                        Content="记住密码"
+                        IsChecked="{Binding RememberPassword}" />
+                </Grid>
+            </ct:FormItem>
 
+            <ct:FormItem Label="操作：">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <RadioButton
+                        Content="加密"
+                        IsChecked="{Binding IsEncrypting}" />
+                    <RadioButton Content="解密" />
+                </StackPanel>
+            </ct:FormItem>
+
+            <ct:FormItem Label="选项：">
+                <StackPanel
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <CheckBox
+                        Content="加密文件名"
+                        IsChecked="{Binding Config.EncryptFileNames}" />
+                    <CheckBox
+                        Content="加密目录名"
+                        IsChecked="{Binding Config.EncryptFolderNames}" />
+                    <CheckBox
+                        Content="删除处理前文件"
+                        IsChecked="{Binding Config.DeleteSourceFiles}" />
+                    <CheckBox
+                        Content="覆盖已存在文件"
+                        IsChecked="{Binding Config.OverwriteExistedFiles}" />
+                </StackPanel>
+            </ct:FormItem>
         </StackPanel>
     </v:PanelBase.ConfigsContent>
     <v:PanelBase.ResultsContent>
-        <ListBox
-            DisplayMemberBinding="{Binding Name}"
-            ItemsSource="{Binding ProcessingFiles}" />
+        <DataGrid
+            IsReadOnly="True"
+            ItemsSource="{Binding ProcessingFiles}">
+            <DataGrid.Columns>
+                <DataGridCheckBoxColumn
+                    Binding="{Binding IsEncrypted}"
+                    Header="已加密" />
+                <DataGridCheckBoxColumn
+                    Binding="{Binding IsFileNameEncrypted}"
+                    Header="文件名已加密" />
+                <DataGridTextColumn
+                    Binding="{Binding Name}"
+                    Header="文件名" />
+                <DataGridTextColumn
+                    Binding="{Binding Path}"
+                    Header="文件路径" />
+                <DataGridTextColumn
+                    Binding="{Binding Error.Message}"
+                    Header="错误信息" />
+            </DataGrid.Columns>
+        </DataGrid>
 
     </v:PanelBase.ResultsContent>
 </v:PanelBase>

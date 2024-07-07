@@ -12,15 +12,43 @@ using System.Threading.Tasks;
 namespace PhotoArchivingTools.ViewModels;
 public partial class EncryptorViewModel : ViewModelBase
 {
-    private EncryptorUtility utility;
-
-    public EncryptorConfig Config { get; set; } = AppConfig.Instance.EncryptorConfig;
-
     [ObservableProperty]
     private string dir;
 
     [ObservableProperty]
+    private bool isEncrypting = true;
+
+    [ObservableProperty]
     private List<EncryptorFileViewModel> processingFiles;
+
+    [ObservableProperty]
+    private bool rememberPassword;
+
+    private EncryptorUtility utility;
+
+    public EncryptorViewModel()
+    {
+        (App.Current as App).Exit += (s, e) =>
+        {
+            if (!RememberPassword)
+            {
+                Config.Password = null;
+            }
+        };
+    }
+
+    public EncryptorConfig Config { get; set; } = AppConfig.Instance.EncryptorConfig;
+    protected override async Task ExecuteImplAsync(CancellationToken token)
+    {
+        if (string.IsNullOrEmpty(Config.Password))
+        {
+            throw new ArgumentException("密码为空");
+        }
+        ArgumentNullException.ThrowIfNull(utility);
+        await utility.ExecuteAsync(token);
+        utility.ProgressUpdate -= Utility_ProgressUpdate;
+        utility = null;
+    }
 
     protected override async Task InitializeImplAsync()
     {
@@ -29,16 +57,6 @@ public partial class EncryptorViewModel : ViewModelBase
         await utility.InitializeAsync();
         ProcessingFiles = utility.ProcessingFiles;
     }
-
-    protected override async Task ExecuteImplAsync(CancellationToken token)
-    {
-        ArgumentNullException.ThrowIfNull(utility);
-        await utility.ExecuteAsync(token);
-        utility.ProgressUpdate -= Utility_ProgressUpdate;
-        utility = null;
-        ProcessingFiles = null;
-    }
-
     protected override void ResetImpl()
     {
         ProcessingFiles = null;

@@ -158,15 +158,15 @@ namespace PhotoArchivingTools.Utilities
         /// <param name="bufferLength">缓冲区大小</param>
         /// <param name="suffix">加密后的文件后缀</param>
         /// <param name="volumeSize">分卷大小，0表示不分卷</param>
-        /// <param name="coverExistedFile">是否覆盖已存在文件。若为False但存在文件，则会抛出异常</param>
+        /// <param name="overwriteExistedFile">是否覆盖已存在文件。若为False但存在文件，则会抛出异常</param>
         /// <param name="refreshFileProgress"></param>
         /// <returns></returns>
         public static FileInfo EncryptFile(this Aes manager, string sourcePath, string targetPath,
             int bufferLength = 1024 * 1024,
-            bool coverExistedFile = false,
+            bool overwriteExistedFile = false,
             RefreshFileProgress refreshFileProgress = null)
         {
-            CheckFileAndDirectoryExist(targetPath, coverExistedFile);
+            CheckFileAndDirectoryExist(targetPath, overwriteExistedFile);
             try
             {
                 using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))

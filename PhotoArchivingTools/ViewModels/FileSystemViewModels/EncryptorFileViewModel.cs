@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using System;
 
 namespace PhotoArchivingTools.ViewModels
 {
@@ -9,6 +10,9 @@ namespace PhotoArchivingTools.ViewModels
 
         [ObservableProperty]
         private bool isFileNameEncrypted;
+
+        [ObservableProperty]
+        private Exception error;
 
         public EncryptorFileViewModel(string path) : base(path)
         {

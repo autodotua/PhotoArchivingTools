@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.11" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="11.0.11" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.11" />
     <PackageReference Include="BinToss.GroupBox.Avalonia" Version="1.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
