@@ -19,6 +19,7 @@ namespace PhotoArchivingTools.Utilities
         public const string EncryptedFileExtension = ".ept";
         public EncryptorConfig Config { get; init; } = config;
         public List<EncryptorFileViewModel> ProcessingFiles { get; set; }
+        public int BufferSize { get; set; } = 1024 * 1024;
 
         public override async Task ExecuteAsync(CancellationToken token)
         {
@@ -33,9 +34,20 @@ namespace PhotoArchivingTools.Utilities
                 string sourceDir = GetSourceDir();
                 string targetDir = GetDistDir();
 
+                string baseMessage = null;
+                var progressReport = new AesExtension.RefreshFileProgress((string source, string target, long max, long value) =>
+                {
+                    NotifyProgressUpdate(ProcessingFiles.Count, index, baseMessage +
+                        $"（{index}/{ProcessingFiles.Count}），当前文件：{Path.GetFileName(source)}（{(1.0 * value / 1024 / 1024):0}MB/{(1.0 * max / 1024 / 1024):0}MB）");
+                });
+
                 foreach (var file in ProcessingFiles)
                 {
-                    NotifyProgressUpdate(ProcessingFiles.Count, index++, isEncrypt ? "正在加密文件" : "正在解密文件");
+                    token.ThrowIfCancellationRequested();
+                    baseMessage = isEncrypt ? "正在加密文件" : "正在解密文件";
+                    NotifyProgressUpdate(ProcessingFiles.Count, index++, baseMessage +
+                        $"（{index}/{ProcessingFiles.Count}），当前文件：{file.Name}（0MB/{(1.0 * new FileInfo(file.Path).Length / 1024 / 1024):0}）");
+
 
                     string targetName = isEncrypt
                         ? (Config.EncryptFileNames ? EncryptFileName(file.Name) : $"{file.Name}{EncryptedFileExtension}")
@@ -56,12 +68,12 @@ namespace PhotoArchivingTools.Utilities
                     {
                         if (isEncrypt)
                         {
-                            aes.EncryptFile(file.Path, targetFilePath, overwriteExistedFile: Config.OverwriteExistedFiles);
+                            aes.EncryptFile(file.Path, targetFilePath, token, BufferSize, Config.OverwriteExistedFiles, progressReport);
                             file.IsFileNameEncrypted = Config.EncryptFileNames;
                         }
                         else
                         {
-                            aes.DecryptFile(file.Path, targetFilePath, overwriteExistedFile: Config.OverwriteExistedFiles);
+                            aes.DecryptFile(file.Path, targetFilePath, token, BufferSize, Config.OverwriteExistedFiles, progressReport);
                             file.IsFileNameEncrypted = false;
                         }
                         file.IsEncrypted = isEncrypt;
@@ -83,11 +95,6 @@ namespace PhotoArchivingTools.Utilities
                         file.Error = ex;
                     }
                 }
-
-                //if (isEncrypt && Config.EncryptFolderNames)
-                //{
-                //    EncryptFolders(Config.EncryptedDir, false);
-                //}
             }, token);
         }
 

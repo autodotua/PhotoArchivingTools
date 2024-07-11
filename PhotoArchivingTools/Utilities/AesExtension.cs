@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 namespace PhotoArchivingTools.Utilities
 {
@@ -146,13 +147,7 @@ namespace PhotoArchivingTools.Utilities
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
             }
         }
-        public static Task<FileInfo> EncryptFileAsync(this Aes manager, string sourcePath, string targetPath,
-    int bufferLength = 1024 * 1024,
-    bool overwriteExistedFile = false,
-    RefreshFileProgress refreshFileProgress = null)
-        {
-            return Task.Run(() => EncryptFile(manager, sourcePath, targetPath, bufferLength, overwriteExistedFile, refreshFileProgress));
-        }
+
         /// <summary>
         /// 加密文件
         /// </summary>
@@ -166,6 +161,7 @@ namespace PhotoArchivingTools.Utilities
         /// <param name="refreshFileProgress"></param>
         /// <returns></returns>
         public static FileInfo EncryptFile(this Aes manager, string sourcePath, string targetPath,
+            CancellationToken cancellationToken,
             int bufferLength = 1024 * 1024,
             bool overwriteExistedFile = false,
             RefreshFileProgress refreshFileProgress = null)
@@ -185,6 +181,7 @@ namespace PhotoArchivingTools.Utilities
                     long fileLength = streamSource.Length;
                     while ((size = streamSource.Read(input, 0, bufferLength)) != 0)
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         if (streamSource.Position == fileLength)
                         {
                             output = encryptor.TransformFinalBlock(input, 0, size);
@@ -215,14 +212,9 @@ namespace PhotoArchivingTools.Utilities
             }
         }
 
-        public static Task<FileInfo[]> DecryptFileAsync(this Aes manager, string sourcePath, string targetPath,
-            int bufferLength = 1024 * 1024,
-            bool overwriteExistedFile = false,
-            RefreshFileProgress refreshFileProgress = null)
-        {
-            return Task.Run(()=> DecryptFile(manager, sourcePath, targetPath, bufferLength, overwriteExistedFile, refreshFileProgress));
-        }
+
         public static FileInfo[] DecryptFile(this Aes manager, string sourcePath, string targetPath,
+            CancellationToken cancellationToken,
             int bufferLength = 1024 * 1024,
             bool overwriteExistedFile = false,
             RefreshFileProgress refreshFileProgress = null)
@@ -256,6 +248,7 @@ namespace PhotoArchivingTools.Utilities
                             long fileLength = streamSource.Length;
                             while ((size = streamSource.Read(input, 0, input.Length)) != 0)
                             {
+                                cancellationToken.ThrowIfCancellationRequested();
                                 int outputSize = 0;
                                 if (streamSource.Position == fileLength && encryptedFileName == lastencryptedFile)
                                 {
