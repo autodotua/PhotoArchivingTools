@@ -16,7 +16,7 @@
     mc:Ignorable="d">
     <v:PanelBase.Styles>
         <Style Selector="ct|FormItem">
-            <Setter Property="LabelWidth" Value="72" />
+            <Setter Property="LabelWidth" Value="96" />
         </Style>
     </v:PanelBase.Styles>
     <v:PanelBase.ConfigsContent>
@@ -45,8 +45,31 @@
                 </Grid>
             </ct:FormItem>
 
-            <ct:FormItem Label="选项：">
+            <ct:FormItem Label="加解密项目：">
 
+                <WrapPanel>
+                    <WrapPanel.Styles>
+                        <Style Selector="CheckBox">
+                            <Setter Property="Margin" Value="0,0,8,0" />
+                        </Style>
+                    </WrapPanel.Styles>
+                    <CheckBox
+                        Content="文件内容"
+                        IsChecked="True"
+                        IsEnabled="False" />
+                    <CheckBox
+                        Content="文件名"
+                        IsChecked="{Binding Config.EncryptFileNames}" />
+                    <CheckBox
+                        Content="文件夹名"
+                        IsChecked="{Binding Config.EncryptFolderNames}" />
+                    <CheckBox
+                        Content="超长文件名支持"
+                        IsChecked="{Binding Config.LongFileNamesSupport}"
+                        ToolTip.Tip="使用单独的文件记录加密后的文件名，防止加密后文件名超过系统支持的最大长度" />
+                </WrapPanel>
+            </ct:FormItem>
+            <ct:FormItem Label="选项：">
                 <WrapPanel>
                     <WrapPanel.Styles>
                         <Style Selector="ct|FormItem">
@@ -67,12 +90,8 @@
                             ItemsSource="{Binding CipherModes}"
                             SelectedItem="{Binding Config.CipherMode}" />
                     </ct:FormItem>
-                    <CheckBox
-                        Content="加密文件名"
-                        IsChecked="{Binding Config.EncryptFileNames}" />
-                    <CheckBox
-                        Content="加密目录名"
-                        IsChecked="{Binding Config.EncryptFolderNames}" />
+
+
                     <CheckBox
                         Content="删除处理前文件"
                         IsChecked="{Binding Config.DeleteSourceFiles}" />

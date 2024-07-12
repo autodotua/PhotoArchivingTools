@@ -21,6 +21,9 @@ namespace PhotoArchivingTools.ViewModels
         private string targetName;
 
         [ObservableProperty]
+        private string targetPath;
+
+        [ObservableProperty]
         private string targetRelativePath;
 
 
