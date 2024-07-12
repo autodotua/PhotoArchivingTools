@@ -125,7 +125,7 @@ namespace PhotoArchivingTools.Utilities
             }
         }
 
-        private static void CheckFileAndDirectoryExist(string path, bool overwriteExistedFiles)
+        private static void CheckFileAndDirectoryExists(string path, bool overwriteExistedFiles)
         {
             if (File.Exists(path))
             {
@@ -166,7 +166,7 @@ namespace PhotoArchivingTools.Utilities
             bool overwriteExistedFile = false,
             RefreshFileProgress refreshFileProgress = null)
         {
-            CheckFileAndDirectoryExist(targetPath, overwriteExistedFile);
+            CheckFileAndDirectoryExists(targetPath, overwriteExistedFile);
             try
             {
                 using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
@@ -219,7 +219,7 @@ namespace PhotoArchivingTools.Utilities
             bool overwriteExistedFile = false,
             RefreshFileProgress refreshFileProgress = null)
         {
-            CheckFileAndDirectoryExist(targetPath, overwriteExistedFile);
+            CheckFileAndDirectoryExists(targetPath, overwriteExistedFile);
             List<string> encryptedFileNames = new List<string>() { sourcePath };
             var lastencryptedFile = sourcePath;
             try

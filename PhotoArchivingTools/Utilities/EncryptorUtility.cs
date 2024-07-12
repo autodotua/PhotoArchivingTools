@@ -17,6 +17,7 @@ namespace PhotoArchivingTools.Utilities
     public class EncryptorUtility(EncryptorConfig config) : UtilityBase
     {
         public const string EncryptedFileExtension = ".ept";
+        public const string DirectoryStructureFile = "$files$.txt";
         public EncryptorConfig Config { get; init; } = config;
         public List<EncryptorFileViewModel> ProcessingFiles { get; set; }
         public int BufferSize { get; set; } = 1024 * 1024;
@@ -33,11 +34,11 @@ namespace PhotoArchivingTools.Utilities
                 bool isEncrypting = IsEncrypting();
                 string sourceDir = GetSourceDir();
                 string targetDir = GetDistDir();
-                Dictionary<string, string> longFileNames;
-                if (Config.LongFileNamesSupport && isEncrypting)
-                {
-                    longFileNames = new Dictionary<string, string>();
-                }
+
+                //初始化文件结构加密字典
+                Dictionary<string, string> dirStructureDic = CreateDirStructureDic();
+
+                //初始化进度通知
                 string baseMessage = null;
                 var progressReport = new AesExtension.RefreshFileProgress((string source, string target, long max, long value) =>
                 {
@@ -52,25 +53,21 @@ namespace PhotoArchivingTools.Utilities
                     NotifyProgressUpdate(ProcessingFiles.Count, index++, baseMessage +
                         $"（{index}/{ProcessingFiles.Count}），当前文件：{file.Name}（0MB/{1.0 * new FileInfo(file.Path).Length / 1024 / 1024:0}）");
 
-                    string targetName, targetFilePath;
-                    ProcessFileNames(isEncrypting, sourceDir, targetDir, file, out targetName, out targetFilePath);
-
                     try
                     {
+                        ProcessFileNames(file, dirStructureDic);
                         if (isEncrypting)
                         {
-                            aes.EncryptFile(file.Path, targetFilePath, token, BufferSize, Config.OverwriteExistedFiles, progressReport);
+                            aes.EncryptFile(file.Path, file.TargetPath, token, BufferSize, Config.OverwriteExistedFiles, progressReport);
                             file.IsFileNameEncrypted = Config.EncryptFileNames;
                         }
                         else
                         {
-                            aes.DecryptFile(file.Path, targetFilePath, token, BufferSize, Config.OverwriteExistedFiles, progressReport);
+                            aes.DecryptFile(file.Path, file.TargetPath, token, BufferSize, Config.OverwriteExistedFiles, progressReport);
                             file.IsFileNameEncrypted = false;
                         }
                         file.IsEncrypted = isEncrypting;
-                        file.TargetName = targetName;
-                        file.TargetRelativePath = Path.GetRelativePath(targetDir, targetFilePath);
-                        File.SetLastWriteTime(targetFilePath, File.GetLastWriteTime(file.Path));
+                        File.SetLastWriteTime(file.TargetPath, File.GetLastWriteTime(file.Path));
 
                         if (Config.DeleteSourceFiles)
                         {
@@ -86,75 +83,98 @@ namespace PhotoArchivingTools.Utilities
                         file.Error = ex;
                     }
                 }
+
+                if(Config.EncryptDirectoryStructure && isEncrypting)
+                {
+                    using var fs = File.CreateText(Path.Combine(Config.EncryptedDir, DirectoryStructureFile));
+                    foreach (var kv in dirStructureDic)
+                    {
+                        fs.WriteLine($"{kv.Key}\t{kv.Value}");
+                    }
+                    fs.Close();
+                }
             }, token);
+        }
+
+        private Dictionary<string, string> CreateDirStructureDic()
+        {
+            Dictionary<string, string> dirStructureDic = null;
+            if (Config.EncryptDirectoryStructure)
+            {
+                dirStructureDic = new Dictionary<string, string>();
+                if (!IsEncrypting())
+                {
+                    var fileListFile = Path.Combine(Config.EncryptedDir, DirectoryStructureFile);
+                    if (!File.Exists(fileListFile))
+                    {
+                        throw new Exception("目录结构文件不存在");
+                    }
+                    foreach (var line in File.ReadLines(fileListFile))
+                    {
+                        var parts = line.Split('\t', StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length != 2)
+                        {
+                            throw new Exception("目录结构文件内容不符合规范");
+                        }
+                        dirStructureDic.Add(parts[0], parts[1]);
+                    }
+                }
+            }
+
+            return dirStructureDic;
         }
 
         private void ProcessFileNames(EncryptorFileViewModel file, Dictionary<string, string> longNames)
         {
+            var isEncrypting = IsEncrypting();
             ArgumentNullException.ThrowIfNull(file);
-            if (Config.LongFileNamesSupport)
+            if (Config.EncryptDirectoryStructure)
             {
                 ArgumentNullException.ThrowIfNull(longNames);
-            }
-
-            var isEncrypting = IsEncrypting();
-            if (isEncrypting)
-            {
-                string encryptedFileName;
-                if (Config.EncryptFileNames)
+                Aes aes = GetAes();
+                if (isEncrypting)
                 {
-                    encryptedFileName = EncryptFileName(file.Name);
-                }
-                else
-                {
-                    encryptedFileName = file.Name;
-                }
-                if (Config.LongFileNamesSupport)
-                {
+                    string relativePath = Path.GetRelativePath(GetSourceDir(), file.Path);
+                    string encryptedFileName = Convert.ToBase64String(aes.Encrypt(Encoding.Default.GetBytes(relativePath)));
                     string guid = null;
                     do
                     {
                         guid = Guid.NewGuid().ToString("N")[..8];
-                    } while (!longNames.ContainsKey(guid));
+                    } while (longNames.ContainsKey(guid));
                     longNames.Add(guid, encryptedFileName);
-                    encryptedFileName = guid;
-
+                    file.TargetName = guid;
+                    file.TargetPath = Path.Combine(GetDistDir(), guid);
                 }
                 else
                 {
-                    encryptedFileName += EncryptedFileExtension;
-                }
-                file.TargetName = encryptedFileName;
-            }
-            else
-            {
-                string rawFileName;
-                if (Config.LongFileNamesSupport)
-                {
-                    if (!longNames.TryGetValue(file.Name, out string value))
+                    if (!longNames.TryGetValue(file.Name, out string encryptedFileName))
                     {
                         throw new Exception("在文件名字典文件中没有找到对应文件的原文件名");
                     }
-                    rawFileName = value;
+                    string rawRelativePath = Encoding.Default.GetString(aes.Decrypt(Convert.FromBase64String(encryptedFileName)));
+                    file.TargetName = Path.GetFileName(rawRelativePath);
+                    file.TargetPath = Path.Combine(GetDistDir(), rawRelativePath);
                 }
-                else
-                {
-                    rawFileName = file.Name;
-                }
-                file.TargetName = DecryptFileName(file.Name);
             }
+            else
+            {
+                string targetName = isEncrypting
+                      ? (Config.EncryptFileNames ? EncryptFileName(file.Name) : $"{file.Name}{EncryptedFileExtension}")
+                      : DecryptFileName(file.Name);
 
-            //加解密目录名
-            string relativeDir = Path.GetDirectoryName(Path.GetRelativePath(GetSourceDir(), file.Path));
-            if (isEncrypting && Config.EncryptFolderNames)
-            {
-                relativeDir = EncryptFoldersNames(relativeDir);
+                string relativeDir = Path.GetDirectoryName(Path.GetRelativePath(GetSourceDir(), file.Path));
+                if (isEncrypting && Config.EncryptFolderNames)
+                {
+                    relativeDir = EncryptFoldersNames(relativeDir);
+                }
+                else if (!isEncrypting && relativeDir.EndsWith(EncryptedFileExtension, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    relativeDir = DecryptFoldersNames(relativeDir);
+                }
+                file.TargetPath = Path.Combine(GetDistDir(), relativeDir, targetName);
+                file.TargetName = targetName;
             }
-            else if (!isEncrypting && relativeDir.EndsWith(EncryptedFileExtension, StringComparison.InvariantCultureIgnoreCase))
-            {
-                relativeDir = DecryptFoldersNames(relativeDir);
-            }
-            targetFilePath = Path.Combine(GetDistDir(), relativeDir, targetName);
+            file.TargetRelativePath = Path.GetRelativePath(GetDistDir(), file.TargetPath);
         }
 
         public override async Task InitializeAsync()
@@ -172,14 +192,18 @@ namespace PhotoArchivingTools.Utilities
                 NotifyProgressUpdate(0, -1, "正在搜索文件");
                 foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
                 {
+                    
                     var isEncrypted = IsEncryptedFile(file);
-
-                    files.Add(new EncryptorFileViewModel(file)
+                    var fileM = new EncryptorFileViewModel(file)
                     {
                         IsFileNameEncrypted = isEncrypted && IsNameEncrypted(Path.GetFileName(file)),
                         IsEncrypted = isEncrypted,
                         RelativePath = Path.GetRelativePath(sourceDir, file)
-                    });
+                    };
+                    if (fileM.Name != DirectoryStructureFile)
+                    {
+                        files.Add(fileM);
+                    }
                 }
             });
 

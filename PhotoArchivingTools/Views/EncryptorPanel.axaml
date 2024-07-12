@@ -59,13 +59,16 @@
                         IsEnabled="False" />
                     <CheckBox
                         Content="文件名"
-                        IsChecked="{Binding Config.EncryptFileNames}" />
+                        IsChecked="{Binding Config.EncryptFileNames}"
+                        IsEnabled="{Binding !#chkEncryptDirectoryStructure.IsChecked}" />
                     <CheckBox
                         Content="文件夹名"
-                        IsChecked="{Binding Config.EncryptFolderNames}" />
+                        IsChecked="{Binding Config.EncryptFolderNames}"
+                        IsEnabled="{Binding !#chkEncryptDirectoryStructure.IsChecked}" />
                     <CheckBox
-                        Content="超长文件名支持"
-                        IsChecked="{Binding Config.LongFileNamesSupport}"
+                        x:Name="chkEncryptDirectoryStructure"
+                        Content="目录结构（包括文件和文件夹名）"
+                        IsChecked="{Binding Config.EncryptDirectoryStructure}"
                         ToolTip.Tip="使用单独的文件记录加密后的文件名，防止加密后文件名超过系统支持的最大长度" />
                 </WrapPanel>
             </ct:FormItem>

@@ -10,13 +10,14 @@ namespace PhotoArchivingTools.Configs
             Encrypt,
             Decrypt,
         }
-        public bool LongFileNamesSupport { get; set; }
 
         public CipherMode CipherMode { get; set; } = CipherMode.CBC;
 
         public bool DeleteSourceFiles { get; set; }
 
         public string EncryptedDir { get; set; }
+
+        public bool EncryptDirectoryStructure { get; set; }
 
         public bool EncryptFileNames { get; set; }
 
