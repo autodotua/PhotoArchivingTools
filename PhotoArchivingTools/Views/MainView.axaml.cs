@@ -15,13 +15,14 @@ namespace PhotoArchivingTools.Views;
 
 public partial class MainView : UserControl
 {
+    private CancellationTokenSource loadingToken = null;
+
     public MainView()
     {
         InitializeComponent();
         RegisterMessages();
     }
 
-    private CancellationTokenSource loadingToken = null;
     private void RegisterMessages()
     {
         this.RegisterDialogHostMessage();
@@ -32,10 +33,7 @@ public partial class MainView : UserControl
         {
             if (m.IsVisible)
             {
-                if (loadingToken == null)
-                {
-                    loadingToken = LoadingOverlay.ShowLoading(this);
-                }
+                loadingToken ??= LoadingOverlay.ShowLoading(this);
             }
             else
             {
@@ -48,4 +46,21 @@ public partial class MainView : UserControl
         });
     }
 
+    private void ToolItemBox_PointerPressed(object sender, PointerPressedEventArgs e)
+    {
+        ToolPanelInfo panelInfo = (sender as UserControl).DataContext as ToolPanelInfo;
+        if (panelInfo.PanelInstance == null)
+        {
+            panelInfo.PanelInstance = Activator.CreateInstance(panelInfo.PanelType) as PanelBase;
+            panelInfo.PanelInstance.RequestClosing += (s, e) =>
+            {
+
+                (DataContext as MainViewModel).MainContent = null;
+            };
+        }
+        PanelBase panel = panelInfo.PanelInstance;
+        panel.Title = panelInfo.Title;
+        panel.Description = panelInfo.Description;
+        (DataContext as MainViewModel).MainContent = panel;
+    }
 }

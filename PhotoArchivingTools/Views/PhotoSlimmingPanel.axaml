@@ -10,7 +10,6 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:PhotoSlimmingViewModel"
-    Description="复制或压缩照片，用于生成更小的照片集副本"
     mc:Ignorable="d">
     <v:PanelBase.ConfigsContent>
         <Grid

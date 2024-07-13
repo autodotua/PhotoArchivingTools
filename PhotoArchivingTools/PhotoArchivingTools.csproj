@@ -22,6 +22,7 @@
     <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="13.9.1" />
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="MetadataExtractor" Version="2.8.1" />
+    <PackageReference Include="Avalonia.Svg.Skia" Version="11.0.0.18" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +44,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\ToolItemBox.axaml.cs">
+      <DependentUpon>ToolItemBox.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ToolItemBox.axaml.cs">
+      <DependentUpon>ToolItemBox.axaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\PhotoSlimmingConfigDialog.axaml.cs">
       <DependentUpon>PhotoSlimmingConfigDialog.axaml</DependentUpon>
     </Compile>

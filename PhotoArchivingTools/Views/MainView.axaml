@@ -21,31 +21,28 @@
         <ScrollViewer
             Grid.Row="2"
             HorizontalScrollBarVisibility="Disabled"
+            IsVisible="{Binding MainContent,Converter={x:Static ObjectConverters.IsNull}}"
             VerticalScrollBarVisibility="Auto">
-            <StackPanel
-                Orientation="Vertical"
-                Spacing="8">
-                <StackPanel.Styles>
-                    <Style Selector="Expander">
-                        <Setter Property="HorizontalAlignment" Value="Stretch" />
-                    </Style>
-                </StackPanel.Styles>
-                <Expander Header="相同时间段照片归档">
-                    <local:TimeClassifyPanel />
-                </Expander>
-                <Expander Header="删除存在RAW的JPG">
-                    <local:UselessJpgCleanerPanel />
-                </Expander>
-                <Expander Header="使用EXIF时间更新文件修改时间">
-                    <local:RepairModifiedTimePanel />
-                </Expander>
-                <Expander Header="创建照片集合副本">
-                    <local:PhotoSlimmingPanel />
-                </Expander>
-                <Expander Header="文件加密">
-                    <local:EncryptorPanel />
-                </Expander>
-            </StackPanel>
+            <ItemsControl ItemsSource="{Binding Panels}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel
+                            HorizontalAlignment="Center"
+                            ItemHeight="280"
+                            ItemWidth="200" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <local:ToolItemBox
+                            Title="{Binding Title}"
+                            Description="{Binding Description}"
+                            Icon="{Binding IconUri}"
+                            PointerPressed="ToolItemBox_PointerPressed" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </ScrollViewer>
+        <ContentControl Content="{Binding MainContent}" />
     </Grid>
 </UserControl>

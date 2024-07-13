@@ -10,7 +10,6 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:UselessJpgCleanerViewModel"
-    Description="删除目录中存在同名RAW文件的JPG文件"
     mc:Ignorable="d">
     <v:PanelBase.ConfigsContent>
         <StackPanel

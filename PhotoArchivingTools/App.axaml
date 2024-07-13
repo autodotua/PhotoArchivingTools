@@ -26,8 +26,10 @@
     </Application.Styles>
     <Application.Resources>
         <ResourceDictionary>
+            <c:BitmapAssetValueConverter x:Key="BitmapAssetValueConverter" />
             <ResourceDictionary.MergedDictionaries>
                 <ResourceInclude Source="avares://FzLib.Avalonia/Resources.axaml" />
+                <ResourceInclude Source="Brushes.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

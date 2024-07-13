@@ -1,0 +1,74 @@
+<UserControl
+    x:Class="PhotoArchivingTools.Views.ToolItemBox"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="root"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    mc:Ignorable="d">
+    <Grid Margin="8">
+        <Grid.Styles>
+            <Style Selector="Border">
+                <Setter Property="BoxShadow" Value="0 0 0 0 #66000000" />
+                <Setter Property="RenderTransform" Value="scale(1)" />
+                <Setter Property="Transitions">
+                    <Transitions>
+                        <BoxShadowsTransition
+                            Easing="CubicEaseInOut"
+                            Property="BoxShadow"
+                            Duration="0:0:0.2" />
+                    </Transitions>
+                </Setter>
+                <Style Selector="^ Svg">
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <TransformOperationsTransition
+                                Easing="CubicEaseInOut"
+                                Property="RenderTransform"
+                                Duration="0:0:0.2" />
+                        </Transitions>
+                    </Setter>
+                </Style>
+                <Style Selector="^:pointerover">
+                    <Setter Property="BoxShadow" Value="0 0 8 0 #66000000" />
+                    <Style Selector="^ Svg">
+                        <Setter Property="RenderTransform" Value="scale(1.2)" />
+                    </Style>
+                </Style>
+            </Style>
+        </Grid.Styles>
+        <Border
+            Background="{DynamicResource Background0}"
+            BorderBrush="Gray"
+            CornerRadius="4"
+            Cursor="Hand">
+            <Grid
+                Margin="16"
+                RowDefinitions="*,8,Auto,8,80">
+                <Svg
+                    Width="80"
+                    Height="80"
+                    Css=".icon { fill: #FF0000; }"
+                    Path="{Binding #root.Icon}" />
+                <!--<Image
+                    Width="80"
+                    Height="80"
+                    Source="{Binding #root.Icon, Converter={StaticResource BitmapAssetValueConverter}}" />-->
+                <TextBlock
+                    Grid.Row="2"
+                    HorizontalAlignment="Center"
+                    FontSize="16"
+                    FontWeight="Bold"
+                    Text="{Binding #root.Title}" />
+                <TextBlock
+                    Grid.Row="4"
+                    HorizontalAlignment="Center"
+                    Opacity="0.8"
+                    Text="{Binding #root.Description}"
+                    TextWrapping="Wrap" />
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

@@ -10,7 +10,6 @@
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:TimeClassifyViewModel"
-    Description="识别目录中相同时间段的文件，将它们移动到相同的新目录中"
     mc:Ignorable="d">
     <v:PanelBase.ConfigsContent>
         <StackPanel
