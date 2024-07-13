@@ -20,9 +20,9 @@
             <Setter Property="MinHeight" Value="96" />
             <Setter Property="MaxHeight" Value="360" />
         </Style>
-        <Style Selector="DataGrid">
+        <!--<Style Selector="DataGrid">
             <Setter Property="Height" Value="360" />
-        </Style>
+        </Style>-->
     </Application.Styles>
     <Application.Resources>
         <ResourceDictionary>

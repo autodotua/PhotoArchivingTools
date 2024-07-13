@@ -148,19 +148,57 @@ namespace PhotoArchivingTools.Utilities
             }
         }
 
-        /// <summary>
-        /// 加密文件
-        /// </summary>
-        /// <param name="manager"></param>
-        /// <param name="sourcePath">源文件地址</param>
-        /// <param name="targetPath">目标文件地址</param>
-        /// <param name="bufferLength">缓冲区大小</param>
-        /// <param name="suffix">加密后的文件后缀</param>
-        /// <param name="volumeSize">分卷大小，0表示不分卷</param>
-        /// <param name="overwriteExistedFile">是否覆盖已存在文件。若为False但存在文件，则会抛出异常</param>
-        /// <param name="refreshFileProgress"></param>
-        /// <returns></returns>
-        public static FileInfo EncryptFile(this Aes manager, string sourcePath, string targetPath,
+
+        public static void EncryptFile(this Aes manager, string sourcePath, string targetPath,
+    CancellationToken cancellationToken,
+    int bufferLength = 1024 * 1024,
+    bool overwriteExistedFile = false,
+    RefreshFileProgress refreshFileProgress = null)
+        {
+            CheckFileAndDirectoryExists(targetPath, overwriteExistedFile);
+            try
+            {
+                using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
+                using (FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write))
+                {
+                    streamTarget.Write(manager.IV, 0, manager.IV.Length);
+                    using var encryptor = manager.CreateEncryptor();
+                    long currentSize = 0;
+                    int size;
+                    byte[] input = new byte[bufferLength];
+                    long fileLength = streamSource.Length;
+
+                    while ((size = streamSource.Read(input, 0, bufferLength)) > 0)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                        byte[] output;
+
+                        if (streamSource.Position == fileLength)
+                        {
+                            output = encryptor.TransformFinalBlock(input, 0, size);
+                        }
+                        else
+                        {
+                            output = new byte[size];
+                            encryptor.TransformBlock(input, 0, size, output, 0);
+                        }
+
+                        currentSize += output.Length;
+                        streamTarget.Write(output, 0, output.Length);
+                        streamTarget.Flush();
+                        refreshFileProgress?.Invoke(sourcePath, targetPath, fileLength, currentSize); //更新进度
+                    }
+                }
+                new FileInfo(targetPath).Attributes = File.GetAttributes(sourcePath);
+            }
+            catch (Exception ex)
+            {
+                HandleException(targetPath, ex);
+                throw;
+            }
+        }
+
+        public static void DecryptFile(this Aes manager, string sourcePath, string targetPath,
             CancellationToken cancellationToken,
             int bufferLength = 1024 * 1024,
             bool overwriteExistedFile = false,
@@ -170,112 +208,41 @@ namespace PhotoArchivingTools.Utilities
             try
             {
                 using (FileStream streamSource = new FileStream(sourcePath, FileMode.Open, FileAccess.Read))
+                using (FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write))
                 {
-                    FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write);
-                    using var encryptor = manager.CreateEncryptor();
+                    byte[] iv = new byte[16];
+                    streamSource.Read(iv, 0, iv.Length);
+                    manager.IV = iv;
+                    using var decryptor = manager.CreateDecryptor();
                     long currentSize = 0;
-
                     int size;
                     byte[] input = new byte[bufferLength];
-                    byte[] output = new byte[bufferLength];
                     long fileLength = streamSource.Length;
-                    while ((size = streamSource.Read(input, 0, bufferLength)) != 0)
+
+                    while ((size = streamSource.Read(input, 0, bufferLength)) > 0)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
+                        byte[] output;
+                        int outputSize;
+
                         if (streamSource.Position == fileLength)
                         {
-                            output = encryptor.TransformFinalBlock(input, 0, size);
+                            output = decryptor.TransformFinalBlock(input, 0, size);
+                            outputSize = output.Length;
                         }
                         else
                         {
-                            encryptor.TransformBlock(input, 0, size, output, 0);
+                            output = new byte[size];
+                            outputSize = decryptor.TransformBlock(input, 0, size, output, 0);
                         }
 
-                        currentSize += size;
-
-                        streamTarget.Write(output, 0, output.Length);
+                        currentSize += outputSize;
+                        streamTarget.Write(output, 0, outputSize);
                         streamTarget.Flush();
                         refreshFileProgress?.Invoke(sourcePath, targetPath, fileLength, currentSize); //更新进度
                     }
-                    streamTarget.Close();
-                    streamTarget.Dispose();
                 }
-                FileInfo encryptedFile = new FileInfo(targetPath);
-
-                encryptedFile.Attributes = File.GetAttributes(sourcePath);
-                return encryptedFile;
-            }
-            catch (Exception ex)
-            {
-                HandleException(targetPath, ex);
-                throw;
-            }
-        }
-
-
-        public static FileInfo[] DecryptFile(this Aes manager, string sourcePath, string targetPath,
-            CancellationToken cancellationToken,
-            int bufferLength = 1024 * 1024,
-            bool overwriteExistedFile = false,
-            RefreshFileProgress refreshFileProgress = null)
-        {
-            CheckFileAndDirectoryExists(targetPath, overwriteExistedFile);
-            List<string> encryptedFileNames = new List<string>() { sourcePath };
-            var lastencryptedFile = sourcePath;
-            try
-            {
-                int fileCount = 0;
-                while (File.Exists(sourcePath + (++fileCount)))
-                {
-                    encryptedFileNames.Add(sourcePath + fileCount);
-
-                    lastencryptedFile = sourcePath + fileCount;
-                }
-
-                using (FileStream streamTarget = new FileStream(targetPath, FileMode.OpenOrCreate, FileAccess.Write))
-                {
-                    using (var decryptor = manager.CreateDecryptor())
-                    {
-                        foreach (var encryptedFileName in encryptedFileNames)
-                        {
-                            FileStream streamSource = new FileStream(encryptedFileName, FileMode.Open, FileAccess.Read);
-
-                            long currentSize = 0;
-
-                            int size;
-                            byte[] input = new byte[bufferLength];
-                            byte[] output = new byte[bufferLength];
-                            long fileLength = streamSource.Length;
-                            while ((size = streamSource.Read(input, 0, input.Length)) != 0)
-                            {
-                                cancellationToken.ThrowIfCancellationRequested();
-                                int outputSize = 0;
-                                if (streamSource.Position == fileLength && encryptedFileName == lastencryptedFile)
-                                {
-                                    outputSize = (output = decryptor.TransformFinalBlock(input, 0, size)).Length;
-                                }
-                                else
-                                {
-                                    outputSize = decryptor.TransformBlock(input, 0, size, output, 0);
-                                }
-
-                                currentSize += output.Length;
-
-                                streamTarget.Write(output, 0, outputSize);
-                                streamTarget.Flush();
-                                refreshFileProgress?.Invoke(sourcePath, encryptedFileName, fileLength, currentSize); //更新进度
-                            }
-                            streamSource.Close();
-                            streamSource.Dispose();
-                        }
-                    }
-
-                    streamTarget.Close();
-                    streamTarget.Dispose();
-                }
-
                 new FileInfo(targetPath).Attributes = File.GetAttributes(sourcePath);
-                return encryptedFileNames.Select(p => new FileInfo(p)).ToArray();
             }
             catch (Exception ex)
             {

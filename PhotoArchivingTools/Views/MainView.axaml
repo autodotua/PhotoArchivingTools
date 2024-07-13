@@ -35,6 +35,7 @@
                         </Transitions>
                     </Setter>
                     <Style Selector="^.hidden">
+                        <Setter Property="IsHitTestVisible" Value="False" />
                         <Setter Property="Opacity" Value="0" />
                     </Style>
                 </Style>

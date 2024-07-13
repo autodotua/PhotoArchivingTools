@@ -58,6 +58,7 @@ namespace PhotoArchivingTools.Utilities
                         ProcessFileNames(file, dirStructureDic);
                         if (isEncrypting)
                         {
+                            aes.GenerateIV();
                             aes.EncryptFile(file.Path, file.TargetPath, token, BufferSize, Config.OverwriteExistedFiles, progressReport);
                             file.IsFileNameEncrypted = Config.EncryptFileNames;
                         }
@@ -84,7 +85,7 @@ namespace PhotoArchivingTools.Utilities
                     }
                 }
 
-                if(Config.EncryptDirectoryStructure && isEncrypting)
+                if (Config.EncryptDirectoryStructure && isEncrypting)
                 {
                     using var fs = File.CreateText(Path.Combine(Config.EncryptedDir, DirectoryStructureFile));
                     foreach (var kv in dirStructureDic)
@@ -136,7 +137,7 @@ namespace PhotoArchivingTools.Utilities
                 {
                     string relativePath = Path.GetRelativePath(GetSourceDir(), file.Path);
                     string encryptedFileName = Convert.ToBase64String(aes.Encrypt(Encoding.Default.GetBytes(relativePath)));
-                    string guid = null;
+                    string guid;
                     do
                     {
                         guid = Guid.NewGuid().ToString("N")[..8];
@@ -192,7 +193,7 @@ namespace PhotoArchivingTools.Utilities
                 NotifyProgressUpdate(0, -1, "正在搜索文件");
                 foreach (var file in Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories))
                 {
-                    
+
                     var isEncrypted = IsEncryptedFile(file);
                     var fileM = new EncryptorFileViewModel(file)
                     {
@@ -267,12 +268,13 @@ namespace PhotoArchivingTools.Utilities
         private string DecryptFileName(string fileName)
         {
             ArgumentException.ThrowIfNullOrEmpty(fileName);
+            bool isNameEncrypted = IsNameEncrypted(fileName);
             if (fileName.EndsWith(EncryptedFileExtension, StringComparison.InvariantCultureIgnoreCase))
             {
                 fileName = Path.GetFileNameWithoutExtension(fileName);
             }
 
-            if (IsNameEncrypted(fileName))
+            if (isNameEncrypted)
             {
                 string base64 = FileNameSafeStringToBase64(fileName);
                 var bytes = Convert.FromBase64String(base64);
@@ -303,7 +305,7 @@ namespace PhotoArchivingTools.Utilities
             bytes = aes.Encrypt(bytes);
             string base64 = Convert.ToBase64String(bytes);
             string safeFileName = Base64ToFileNameSafeString(base64);
-            return safeFileName;
+            return safeFileName + EncryptedFileExtension;
         }
 
         private Aes GetAes()
