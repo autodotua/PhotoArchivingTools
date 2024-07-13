@@ -13,7 +13,18 @@
         RowDefinitions="Auto,8,Auto,8,Auto,8,*,8,Auto,8,Auto,8,Auto">
         <Grid
             ColumnDefinitions="Auto,8,*"
-            RowDefinitions="*,8,*">
+            RowDefinitions="*,*">
+
+            <TextBlock
+                Grid.Column="2"
+                FontSize="16"
+                FontWeight="Bold"
+                Text="{Binding #root.Title}" />
+            <TextBlock
+                Grid.Row="1"
+                Grid.Column="2"
+                Margin="0,4,0,0"
+                Text="{Binding #root.Description}" />
             <Button
                 Grid.RowSpan="99"
                 Width="36"
@@ -30,17 +41,6 @@
                     FontSize="16"
                     Text="&#xE0A6;" />
             </Button>
-            <TextBlock
-                Grid.Column="2"
-                FontSize="16"
-                FontWeight="Bold"
-                Text="{Binding ElementName=root, Path=Title}"
-                TextWrapping="Wrap" />
-            <TextBlock
-                Grid.Row="2"
-                Grid.Column="2"
-                Text="{Binding ElementName=root, Path=Description}"
-                TextWrapping="Wrap" />
         </Grid>
 
         <ContentControl

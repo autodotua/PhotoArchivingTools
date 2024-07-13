@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PhotoArchivingTools.Views;
 
@@ -52,15 +53,17 @@ public partial class MainView : UserControl
         if (panelInfo.PanelInstance == null)
         {
             panelInfo.PanelInstance = Activator.CreateInstance(panelInfo.PanelType) as PanelBase;
-            panelInfo.PanelInstance.RequestClosing += (s, e) =>
+            panelInfo.PanelInstance.RequestClosing +=  (s, e) =>
             {
-
-                (DataContext as MainViewModel).MainContent = null;
+                cc.Classes.Add("hidden");
+                scr.Classes.Remove("hidden");
             };
         }
         PanelBase panel = panelInfo.PanelInstance;
         panel.Title = panelInfo.Title;
         panel.Description = panelInfo.Description;
         (DataContext as MainViewModel).MainContent = panel;
+        cc.Classes.Remove("hidden");
+        scr.Classes.Add("hidden");
     }
 }

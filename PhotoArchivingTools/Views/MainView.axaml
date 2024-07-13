@@ -19,10 +19,27 @@
 
     <Grid>
         <ScrollViewer
+            x:Name="scr"
             Grid.Row="2"
             HorizontalScrollBarVisibility="Disabled"
-            IsVisible="{Binding MainContent,Converter={x:Static ObjectConverters.IsNull}}"
             VerticalScrollBarVisibility="Auto">
+            <ScrollViewer.Styles>
+                <Style Selector="ScrollViewer">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <DoubleTransition
+                                Easing="CubicEaseInOut"
+                                Property="Opacity"
+                                Duration="0:0:0.3" />
+                        </Transitions>
+                    </Setter>
+                    <Style Selector="^.hidden">
+                        <Setter Property="Opacity" Value="0" />
+                    </Style>
+                </Style>
+
+            </ScrollViewer.Styles>
             <ItemsControl ItemsSource="{Binding Panels}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
@@ -43,6 +60,27 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        <ContentControl Content="{Binding MainContent}" />
+        <ContentControl
+            x:Name="cc"
+            Classes="hidden"
+            Content="{Binding MainContent}">
+            <ContentControl.Styles>
+                <Style Selector="ContentControl">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <DoubleTransition
+                                Easing="CubicEaseInOut"
+                                Property="Opacity"
+                                Duration="0:0:0.3" />
+                        </Transitions>
+                    </Setter>
+                    <Style Selector="^.hidden">
+                        <Setter Property="IsHitTestVisible" Value="False" />
+                        <Setter Property="Opacity" Value="0" />
+                    </Style>
+                </Style>
+            </ContentControl.Styles>
+        </ContentControl>
     </Grid>
 </UserControl>
