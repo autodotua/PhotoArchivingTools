@@ -173,9 +173,38 @@
                     Binding="{Binding TargetRelativePath}"
                     Header="目标文件路径" />
 
-                <DataGridTextColumn
-                    Binding="{Binding Error.Message}"
-                    Header="错误信息" />
+                <DataGridTemplateColumn
+                    Width="240"
+                    Header="错误信息">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="vm:EncryptorFileViewModel">
+                            <Button
+                                HorizontalAlignment="Stretch"
+                                Background="Transparent"
+                                Cursor="Hand"
+                                IsVisible="{Binding Error, Converter={StaticResource NotNullConverter}}">
+                                <TextBlock
+                                    Text="{Binding Error.Message}"
+                                    TextTrimming="CharacterEllipsis" />
+                                <Button.Flyout>
+                                    <Flyout>
+                                        <Grid RowDefinitions="Auto,8,Auto">
+                                            <TextBlock
+                                                Text="{Binding Error}"
+                                                TextWrapping="Wrap" />
+                                            <Button
+                                                Grid.Row="2"
+                                                HorizontalAlignment="Left"
+                                                Command="{Binding $parent[DataGrid].DataContext.CopyErrorCommand}"
+                                                CommandParameter="{Binding Error}"
+                                                Content="复制" />
+                                        </Grid>
+                                    </Flyout>
+                                </Button.Flyout>
+                            </Button>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
             </DataGrid.Columns>
         </DataGrid>
 
