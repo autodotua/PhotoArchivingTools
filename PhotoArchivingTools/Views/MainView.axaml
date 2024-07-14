@@ -7,6 +7,7 @@
     xmlns:local="clr-namespace:PhotoArchivingTools.Views"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
+    x:Name="root"
     Margin="8"
     d:DesignHeight="450"
     d:DesignWidth="800"
@@ -19,8 +20,8 @@
 
     <Grid>
         <ScrollViewer
-            x:Name="scr"
             Grid.Row="2"
+            Classes.hidden="{Binding IsToolOpened}"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
             <ScrollViewer.Styles>
@@ -53,17 +54,27 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <local:ToolItemBox
+                            x:Name="tib"
                             Title="{Binding Title}"
                             Description="{Binding Description}"
-                            Icon="{Binding IconUri}"
-                            PointerPressed="ToolItemBox_PointerPressed" />
+                            Icon="{Binding IconUri}">
+                            <Interaction.Behaviors>
+                                <EventTriggerBehavior
+                                    EventName="PointerPressed"
+                                    SourceObject="tib">
+                                    <InvokeCommandAction
+                                        Command="{Binding #root.DataContext.EnterToolCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </EventTriggerBehavior>
+                            </Interaction.Behaviors>
+                        </local:ToolItemBox>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
         <ContentControl
-            x:Name="cc"
             Classes="hidden"
+            Classes.hidden="{Binding !IsToolOpened}"
             Content="{Binding MainContent}">
             <ContentControl.Styles>
                 <Style Selector="ContentControl">

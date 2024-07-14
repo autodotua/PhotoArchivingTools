@@ -46,24 +46,4 @@ public partial class MainView : UserControl
             }
         });
     }
-
-    private void ToolItemBox_PointerPressed(object sender, PointerPressedEventArgs e)
-    {
-        ToolPanelInfo panelInfo = (sender as UserControl).DataContext as ToolPanelInfo;
-        if (panelInfo.PanelInstance == null)
-        {
-            panelInfo.PanelInstance = Activator.CreateInstance(panelInfo.PanelType) as PanelBase;
-            panelInfo.PanelInstance.RequestClosing +=  (s, e) =>
-            {
-                cc.Classes.Add("hidden");
-                scr.Classes.Remove("hidden");
-            };
-        }
-        PanelBase panel = panelInfo.PanelInstance;
-        panel.Title = panelInfo.Title;
-        panel.Description = panelInfo.Description;
-        (DataContext as MainViewModel).MainContent = panel;
-        cc.Classes.Remove("hidden");
-        scr.Classes.Add("hidden");
-    }
 }
