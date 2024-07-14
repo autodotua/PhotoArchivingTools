@@ -8,7 +8,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
     x:Name="root"
-    Margin="8"
     d:DesignHeight="450"
     d:DesignWidth="800"
     x:DataType="vm:MainViewModel"
@@ -21,6 +20,7 @@
     <Grid>
         <ScrollViewer
             Grid.Row="2"
+            Margin="8"
             Classes.hidden="{Binding IsToolOpened}"
             HorizontalScrollBarVisibility="Disabled"
             VerticalScrollBarVisibility="Auto">
@@ -73,7 +73,6 @@
             </ItemsControl>
         </ScrollViewer>
         <ContentControl
-            Classes="hidden"
             Classes.hidden="{Binding !IsToolOpened}"
             Content="{Binding MainContent}">
             <ContentControl.Styles>

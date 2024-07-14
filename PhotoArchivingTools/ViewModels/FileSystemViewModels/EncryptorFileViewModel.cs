@@ -6,6 +6,9 @@ namespace PhotoArchivingTools.ViewModels
     public partial class EncryptorFileViewModel : SimpleFileViewModel
     {
         [ObservableProperty]
+        private bool isEnable = true;
+
+        [ObservableProperty]
         private bool isEncrypted;
 
         [ObservableProperty]

@@ -40,18 +40,20 @@ namespace PhotoArchivingTools.Utilities
 
                 //初始化进度通知
                 string baseMessage = null;
+                var files = ProcessingFiles.Where(p => p.IsEnable).ToList();
+                int count = files.Count;
                 var progressReport = new AesExtension.RefreshFileProgress((string source, string target, long max, long value) =>
                 {
-                    NotifyProgressUpdate(ProcessingFiles.Count, index, baseMessage +
-                        $"（{index}/{ProcessingFiles.Count}），当前文件：{Path.GetFileName(source)}（{1.0 * value / 1024 / 1024:0}MB/{1.0 * max / 1024 / 1024:0}MB）");
+                    NotifyProgressUpdate(count, index, baseMessage +
+                        $"（{index}/{count}），当前文件：{Path.GetFileName(source)}（{1.0 * value / 1024 / 1024:0}MB/{1.0 * max / 1024 / 1024:0}MB）");
                 });
 
-                foreach (var file in ProcessingFiles)
+                foreach (var file in files)
                 {
                     token.ThrowIfCancellationRequested();
                     baseMessage = isEncrypting ? "正在加密文件" : "正在解密文件";
-                    NotifyProgressUpdate(ProcessingFiles.Count, index++, baseMessage +
-                        $"（{index}/{ProcessingFiles.Count}），当前文件：{file.Name}（0MB/{1.0 * new FileInfo(file.Path).Length / 1024 / 1024:0}）");
+                    NotifyProgressUpdate(count, index++, baseMessage +
+                        $"（{index}/{count}），当前文件：{file.Name}（0MB/{1.0 * new FileInfo(file.Path).Length / 1024 / 1024:0}）");
 
                     try
                     {

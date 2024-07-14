@@ -9,7 +9,7 @@
     xmlns:me="using:FzLib.Avalonia.MarkupExtensions"
     xmlns:v="using:PhotoArchivingTools.Views"
     xmlns:vm="clr-namespace:PhotoArchivingTools.ViewModels"
-    d:DesignHeight="450"
+    d:DesignHeight="600"
     d:DesignWidth="800"
     x:DataType="vm:EncryptorViewModel"
     mc:Ignorable="d">
@@ -121,9 +121,11 @@
             CanUserReorderColumns="False"
             CanUserResizeColumns="True"
             CanUserSortColumns="False"
-            IsReadOnly="True"
             ItemsSource="{Binding ProcessingFiles}">
             <DataGrid.Columns>
+                <DataGridCheckBoxColumn
+                    Binding="{Binding IsEnable}"
+                    Header="处理"/>
                 <DataGridTemplateColumn
                     CanUserResize="False"
                     Header="已加密">
@@ -138,39 +140,30 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
-                <DataGridTemplateColumn
-                    CanUserResize="False"
-                    Header="文件名已加密">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate x:DataType="vm:EncryptorFileViewModel">
-                            <Ellipse
-                                Width="8"
-                                Height="8"
-                                Fill="Green"
-                                IsVisible="{Binding IsFileNameEncrypted}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
 
                 <DataGridTextColumn
                     Width="180"
                     Binding="{Binding Name}"
-                    Header="文件名" />
+                    Header="文件名"
+                    IsReadOnly="True" />
 
                 <DataGridTextColumn
                     Width="240"
                     Binding="{Binding RelativePath}"
-                    Header="文件路径" />
+                    Header="文件路径"
+                    IsReadOnly="True" />
 
                 <DataGridTextColumn
                     Width="180"
                     Binding="{Binding TargetName}"
-                    Header="目标文件名" />
+                    Header="目标文件名"
+                    IsReadOnly="True" />
 
                 <DataGridTextColumn
                     Width="240"
                     Binding="{Binding TargetRelativePath}"
-                    Header="目标文件路径" />
+                    Header="目标文件路径"
+                    IsReadOnly="True" />
 
                 <DataGridTemplateColumn
                     Width="240"
