@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Directory = System.IO.Directory;
 using ImageMagick;
 using PhotoArchivingTools.ViewModels;
+using System.Diagnostics;
 
 namespace PhotoArchivingTools.Utilities
 {
@@ -29,6 +30,15 @@ namespace PhotoArchivingTools.Utilities
             rCompress = new Regex(@$"\.({string.Join('|', Config.CompressExtensions)})$", RegexOptions.IgnoreCase);
             rBlack = new Regex(Config.BlackList);
             rWhite = new Regex(string.IsNullOrWhiteSpace(Config.WhiteList) ? ".*" : Config.WhiteList, RegexOptions.IgnoreCase);
+
+            if (!config.FolderNameTemplate.Contains(PhotoSlimmingConfig.FolderNamePlaceholder))
+            {
+                throw new Exception("文件夹名模板不包含文件夹名占位符");
+            }
+            if (!config.FileNameTemplate.Contains(PhotoSlimmingConfig.FileNamePlaceholder))
+            {
+                throw new Exception("文件夹名模板不包含文件夹名占位符");
+            }
         }
 
         public enum TaskType
@@ -166,7 +176,7 @@ namespace PhotoArchivingTools.Utilities
                     {
                         File.Delete(file.FullName);
                     }
-                    else if(Directory.Exists(file.FullName))
+                    else if (Directory.Exists(file.FullName))
                     {
                         Directory.Delete(file.FullName, true);
                     }
@@ -301,25 +311,45 @@ namespace PhotoArchivingTools.Utilities
 
         private string GetDistPath(string sourceFileName, string newExtension, out string subPath)
         {
-            char spliiter = sourceFileName.Contains('\\') ? '\\' : '/';
-            subPath = Path.IsPathRooted(sourceFileName) ? Path.GetRelativePath(Config.SourceDir, sourceFileName) : sourceFileName;
-            string filename = Path.GetFileName(subPath);
-            string dir = Path.GetDirectoryName(subPath);
-            int level = dir.Count(p => p == spliiter) + 1;
+            char splitter = sourceFileName.Contains('\\') ? '\\' : '/';
+            string subDir = Path.GetDirectoryName(Path.GetRelativePath(Config.SourceDir, sourceFileName));
+            if (!Path.IsPathRooted(sourceFileName))
+            {
+                Debug.Assert(false);
+            }
+
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(sourceFileName);
+            string extension = Path.GetExtension(sourceFileName);
+
+            if (Config.FileNameTemplate != PhotoSlimmingConfig.FileNamePlaceholder)
+            {
+                fileNameWithoutExtension = Config.FileNameTemplate.Replace(PhotoSlimmingConfig.FileNamePlaceholder, fileNameWithoutExtension);
+            }
+            if (!string.IsNullOrEmpty(newExtension))
+            {
+                extension = $".{newExtension}";
+            }
+
+            int level = subDir.Count(c => c == splitter) + 1;
+
             if (level > Config.DeepestLevel)
             {
-                string[] dirParts = dir.Split(spliiter);
-                dir = string.Join(spliiter, dirParts[..Config.DeepestLevel]);
-                filename = $"{string.Join('-', dirParts[Config.DeepestLevel..])}-{filename}";
-                subPath = Path.Combine(dir, filename);
+                string[] dirParts = subDir.Split(splitter);
+                subDir = string.Join(splitter, dirParts[..Config.DeepestLevel]);
+                fileNameWithoutExtension = $"{string.Join('-', dirParts[Config.DeepestLevel..])}-{fileNameWithoutExtension}";
             }
 
-            if (newExtension != null)
+            if (Config.FolderNameTemplate != PhotoSlimmingConfig.FolderNamePlaceholder && subDir.Length > 0)
             {
-                subPath = Path.Combine(dir, Path.GetFileNameWithoutExtension(filename) + "." + newExtension);
+                string[] dirParts = subDir.Split(splitter);
+                subDir = Path.Combine(dirParts.Select(p =>
+                Config.FolderNameTemplate.Replace(PhotoSlimmingConfig.FolderNamePlaceholder, p))
+                    .ToArray());
             }
-            return Path.Combine(Config.DistDir, subPath);
 
+            subPath = Path.Combine(subDir, fileNameWithoutExtension + extension);
+
+            return Path.Combine(Config.DistDir, subPath);
         }
 
         private bool NeedProcess(TaskType type, FileInfo file)

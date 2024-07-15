@@ -33,7 +33,7 @@
                 Label="配置名称：">
                 <TextBox Text="{Binding Config.Name}" />
             </ct:FormItem>
-            <gb:GroupBox Header="目录">
+            <gb:GroupBox Header="目录和文件">
                 <StackPanel
                     Orientation="Vertical"
                     Spacing="8">
@@ -65,6 +65,13 @@
                         Grid.ColumnSpan="99"
                         Content="跳过已经存在的文件（而不是覆盖）"
                         IsChecked="{Binding Config.SkipIfExist}" />
+
+                    <ct:FormItem Label="目标文件名：">
+                        <TextBox Text="{Binding Config.FileNameTemplate}" />
+                    </ct:FormItem>
+                    <ct:FormItem Label="目标文件夹名：">
+                        <TextBox Text="{Binding Config.FolderNameTemplate}" />
+                    </ct:FormItem>
                 </StackPanel>
             </gb:GroupBox>
             <gb:GroupBox Header="文件筛选">
@@ -123,8 +130,8 @@
                             Maximum="100"
                             Minimum="10"
                             Value="{Binding Config.Quality}" />
-                    </ct:FormItem>    
-                  <ct:FormItem Label="处理线程数：">
+                    </ct:FormItem>
+                    <ct:FormItem Label="处理线程数：">
                         <NumericUpDown
                             FormatString="0"
                             Increment="1"
