@@ -30,7 +30,7 @@ namespace PhotoArchivingTools.Utilities
             rCompress = new Regex(@$"\.({string.Join('|', Config.CompressExtensions)})$", RegexOptions.IgnoreCase);
             rBlack = new Regex(Config.BlackList);
             rWhite = new Regex(string.IsNullOrWhiteSpace(Config.WhiteList) ? ".*" : Config.WhiteList, RegexOptions.IgnoreCase);
-
+            
             if (!config.FolderNameTemplate.Contains(PhotoSlimmingConfig.FolderNamePlaceholder))
             {
                 throw new Exception("文件夹名模板不包含文件夹名占位符");
@@ -93,76 +93,89 @@ namespace PhotoArchivingTools.Utilities
 
             return Task.Run(() =>
             {
-                NotifyProgressUpdate(1, -1, "正在搜索目录");
-                var files = new DirectoryInfo(Config.SourceDir)
-                    .EnumerateFiles("*", SearchOption.AllDirectories)
-                    .ToList();
-                int index = 0;
-                foreach (var file in files)
-                {
-                    index++;
-                    NotifyProgressUpdate(files.Count, index, $"正在查找文件 ({index}/{files.Count})");
+                SearchCopyingAndCompressingFiles();
 
-                    if (rBlack.IsMatch(file.FullName)
-                        || !rWhite.IsMatch(Path.GetFileNameWithoutExtension(file.Name)))
-                    {
-                        continue;
-                    }
-
-                    if (rCompress.IsMatch(file.Name))
-                    {
-                        if (NeedProcess(TaskType.Compress, file))
-                        {
-                            CompressFiles.Add(file);
-                        }
-                        else
-                        {
-                            CompressFiles.AddSkipped(file);
-                        }
-                    }
-                    else if (rCopy.IsMatch(file.Name))
-                    {
-                        if (NeedProcess(TaskType.Copy, file))
-                        {
-                            CopyFiles.Add(file);
-                        }
-                        else
-                        {
-                            CopyFiles.AddSkipped(file);
-                        }
-                    }
-
-                }
-
-                if (Directory.Exists(Config.DistDir))
-                {
-                    NotifyProgressUpdate(1, -1, "正在筛选需要删除的文件");
-                    var desiredDistFiles = CopyFiles.SkippedFiles
-                    .Select(file => GetDistPath(file.FullName, null, out _))
-                     .Concat(CompressFiles.SkippedFiles
-                        .Select(file => GetDistPath(file.FullName, Config.OutputFormat, out _)))
-                     .ToHashSet();
-
-                    foreach (var file in Directory
-                    .EnumerateFiles(Config.DistDir, "*", SearchOption.AllDirectories)
-                     .Where(p => !rBlack.IsMatch(p)))
-                    {
-                        if (!desiredDistFiles.Contains(file))
-                        {
-                            DeleteFiles.Add(new FileInfo(file));
-                        }
-                    }
-
-                    NotifyProgressUpdate(0, -1, $"正在搜索空目录");
-                    foreach (var dir in Directory.EnumerateDirectories(Config.DistDir, "*", SearchOption.AllDirectories))
-                    {
-                        if (!Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Any())
-                        {
-                            DeleteFiles.Add(new FileInfo(dir));
-                        }
-                    }
-                }
+                SearchDeletingFiles();
             });
+        }
+
+        private void SearchDeletingFiles()
+        {
+            if (!Directory.Exists(Config.DistDir))
+            {
+                return;
+            }
+            NotifyProgressUpdate(1, -1, "正在筛选需要删除的文件");
+            var desiredDistFiles = CopyFiles.SkippedFiles
+            .Select(file => GetDistPath(file.FullName, null, out _))
+             .Concat(CompressFiles.SkippedFiles
+                .Select(file => GetDistPath(file.FullName, Config.OutputFormat, out _)))
+             .ToHashSet();
+
+            foreach (var file in Directory
+            .EnumerateFiles(Config.DistDir, "*", SearchOption.AllDirectories)
+             .Where(p => !rBlack.IsMatch(p)))
+            {
+                if (!desiredDistFiles.Contains(file))
+                {
+                    DeleteFiles.Add(new FileInfo(file));
+                }
+            }
+
+            NotifyProgressUpdate(1, -1, "正在需要删除的文件夹");
+            var desiredDistFolders= desiredDistFiles.Select(Path.GetDirectoryName).ToHashSet();
+
+            foreach (var dir in Directory.EnumerateDirectories(Config.DistDir, "*", SearchOption.AllDirectories))
+            {
+                if(!desiredDistFolders.Contains(dir))
+                {
+                    DeleteFiles.Add(new FileInfo(dir));
+                }
+            }
+        }
+
+        private void SearchCopyingAndCompressingFiles()
+        {
+            NotifyProgressUpdate(1, -1, "正在搜索目录");
+            var files = new DirectoryInfo(Config.SourceDir)
+                .EnumerateFiles("*", SearchOption.AllDirectories)
+                .ToList();
+            int index = 0;
+            foreach (var file in files)
+            {
+                index++;
+                NotifyProgressUpdate(files.Count, index, $"正在查找文件 ({index}/{files.Count})");
+
+                if (rBlack.IsMatch(file.FullName)
+                    || !rWhite.IsMatch(Path.GetFileNameWithoutExtension(file.Name)))
+                {
+                    continue;
+                }
+
+                if (rCompress.IsMatch(file.Name))
+                {
+                    if (NeedProcess(TaskType.Compress, file))
+                    {
+                        CompressFiles.Add(file);
+                    }
+                    else
+                    {
+                        CompressFiles.AddSkipped(file);
+                    }
+                }
+                else if (rCopy.IsMatch(file.Name))
+                {
+                    if (NeedProcess(TaskType.Copy, file))
+                    {
+                        CopyFiles.Add(file);
+                    }
+                    else
+                    {
+                        CopyFiles.AddSkipped(file);
+                    }
+                }
+
+            }
         }
 
         private void Clear(CancellationToken token)
