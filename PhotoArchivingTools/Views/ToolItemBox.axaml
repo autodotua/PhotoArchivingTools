@@ -11,13 +11,13 @@
     <Grid Margin="8">
         <Grid.Styles>
             <Style Selector="Border">
-                <Setter Property="BoxShadow" Value="0 0 0 0 #66000000" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Background0}" />
                 <Setter Property="RenderTransform" Value="scale(1)" />
                 <Setter Property="Transitions">
                     <Transitions>
-                        <BoxShadowsTransition
+                        <BrushTransition
                             Easing="CubicEaseInOut"
-                            Property="BoxShadow"
+                            Property="BorderBrush"
                             Duration="0:0:0.2" />
                     </Transitions>
                 </Setter>
@@ -28,11 +28,12 @@
                                 Easing="CubicEaseInOut"
                                 Property="RenderTransform"
                                 Duration="0:0:0.2" />
+
                         </Transitions>
                     </Setter>
                 </Style>
                 <Style Selector="^:pointerover">
-                    <Setter Property="BoxShadow" Value="0 0 8 0 #66000000" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource Accent2}" />
                     <Style Selector="^ Svg">
                         <Setter Property="RenderTransform" Value="scale(1.2)" />
                     </Style>
@@ -41,7 +42,7 @@
         </Grid.Styles>
         <Border
             Background="{DynamicResource Background0}"
-            BorderBrush="Gray"
+            BorderThickness="2"
             CornerRadius="8"
             Cursor="Hand">
             <Grid
